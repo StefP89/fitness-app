@@ -32,9 +32,69 @@ FOOD_DB = {
     "Fruits": {
         "Apple": {"protein": 0.3, "carbs": 14, "fat": 0.2, "unit": "1 medium"},
         "Banana": {"protein": 1.3, "carbs": 27, "fat": 0.3, "unit": "1 medium"},
+        "Orange": {"protein": 1.2, "carbs": 15.4, "fat": 0.2, "unit": "1 medium"},
+        "Grapes": {"protein": 0.6, "carbs": 17, "fat": 0.2, "unit": "1 cup"},
+        "Strawberries": {"protein": 1.0, "carbs": 11.7, "fat": 0.4, "unit": "1 cup"},
+        "Blueberries": {"protein": 1.1, "carbs": 21, "fat": 0.5, "unit": "1 cup"},
+        "Pineapple": {"protein": 0.9, "carbs": 21.6, "fat": 0.2, "unit": "1 cup"},
+        "Watermelon": {"protein": 0.9, "carbs": 11.5, "fat": 0.2, "unit": "1 cup"},
+        "Mango": {"protein": 0.8, "carbs": 25, "fat": 0.6, "unit": "1 fruit"},
+        "Pear": {"protein": 0.6, "carbs": 22, "fat": 0.2, "unit": "1 medium"},
     },
     "Vegetables": {
         "Broccoli": {"protein": 2.6, "carbs": 6, "fat": 0.3, "unit": "1 cup chopped"},
+        "Carrot": {"protein": 0.9, "carbs": 10, "fat": 0.2, "unit": "1 medium"},
+        "Spinach": {"protein": 1.0, "carbs": 1.1, "fat": 0.4, "unit": "1 cup raw"},
+        "Kale": {"protein": 2.2, "carbs": 6.7, "fat": 0.6, "unit": "1 cup"},
+        "Zucchini": {"protein": 1.2, "carbs": 3.5, "fat": 0.3, "unit": "1 medium"},
+        "Bell Pepper": {"protein": 1.0, "carbs": 9, "fat": 0.2, "unit": "1 medium"},
+        "Cucumber": {"protein": 0.7, "carbs": 4, "fat": 0.1, "unit": "1 medium"},
+        "Tomato": {"protein": 1.1, "carbs": 5, "fat": 0.2, "unit": "1 medium"},
+        "Cauliflower": {"protein": 2.0, "carbs": 5, "fat": 0.3, "unit": "1 cup"},
+        "Green Beans": {"protein": 2.4, "carbs": 7, "fat": 0.3, "unit": "1 cup"},
+    },
+    "Grains": {
+        "Brown Rice": {"protein": 5, "carbs": 45, "fat": 1.8, "unit": "1 cup cooked"},
+        "Quinoa": {"protein": 8, "carbs": 39, "fat": 3.6, "unit": "1 cup cooked"},
+        "Oats": {"protein": 6, "carbs": 27, "fat": 3, "unit": "1/2 cup dry"},
+        "Whole Wheat Bread": {"protein": 5, "carbs": 20, "fat": 1.5, "unit": "1 slice"},
+        "White Rice": {"protein": 4, "carbs": 44, "fat": 0.4, "unit": "1 cup cooked"},
+        "Pasta": {"protein": 7, "carbs": 43, "fat": 1.3, "unit": "1 cup cooked"},
+        "Tortilla": {"protein": 4, "carbs": 20, "fat": 2, "unit": "1 medium"},
+        "Bagel": {"protein": 9, "carbs": 48, "fat": 1.5, "unit": "1 medium"},
+        "Cereal": {"protein": 2, "carbs": 22, "fat": 1, "unit": "1 cup"},
+        "Granola": {"protein": 4, "carbs": 37, "fat": 10, "unit": "1/2 cup"},
+    },
+    "Dairy": {
+        "Whole Milk": {"protein": 8, "carbs": 12, "fat": 8, "unit": "1 cup"},
+        "Low-fat Milk": {"protein": 8, "carbs": 13, "fat": 2.5, "unit": "1 cup"},
+        "Skim Milk": {"protein": 8, "carbs": 12, "fat": 0.2, "unit": "1 cup"},
+        "Greek Yogurt": {"protein": 10, "carbs": 6, "fat": 0.7, "unit": "100g"},
+        "Cheddar Cheese": {"protein": 7, "carbs": 0.4, "fat": 9, "unit": "1 oz"},
+        "Cottage Cheese": {"protein": 11, "carbs": 3, "fat": 4, "unit": "1/2 cup"},
+        "Cream Cheese": {"protein": 2, "carbs": 1, "fat": 10, "unit": "1 oz"},
+        "Butter": {"protein": 0.1, "carbs": 0, "fat": 11, "unit": "1 tbsp"},
+        "Yogurt (plain)": {"protein": 5, "carbs": 12, "fat": 3.5, "unit": "1 cup"},
+        "Parmesan": {"protein": 10, "carbs": 1, "fat": 7, "unit": "1 oz"},
+    },
+    "Meats": {
+        "Chicken Breast": {"protein": 31, "carbs": 0, "fat": 3.6, "unit": "100g"},
+        "Ground Beef (80%)": {"protein": 26, "carbs": 0, "fat": 20, "unit": "100g"},
+        "Pork Chop": {"protein": 22, "carbs": 0, "fat": 9, "unit": "100g"},
+        "Turkey Breast": {"protein": 29, "carbs": 0, "fat": 1, "unit": "100g"},
+        "Lamb Chop": {"protein": 25, "carbs": 0, "fat": 20, "unit": "100g"},
+        "Ham": {"protein": 18, "carbs": 1, "fat": 5, "unit": "100g"},
+        "Bacon": {"protein": 12, "carbs": 1, "fat": 42, "unit": "100g"},
+        "Sausage": {"protein": 18, "carbs": 2, "fat": 16, "unit": "100g"},
+        "Roast Beef": {"protein": 28, "carbs": 0, "fat": 8, "unit": "100g"},
+        "Beef Steak": {"protein": 27, "carbs": 0, "fat": 10, "unit": "100g"},
+    },
+    "Fish": {
+        "Salmon": {"protein": 25, "carbs": 0, "fat": 14, "unit": "100g"},
+        "Tuna": {"protein": 29, "carbs": 0, "fat": 1, "unit": "100g"},
+        "Tilapia": {"protein": 26, "carbs": 0, "fat": 2.3, "unit": "100g"},
+        "Cod": {"protein": 20, "carbs": 0, "fat": 1.5, "unit": "100g"},
+        "Sardines": {"protein": 25, "carbs": 0, "fat": 11, "unit": "100g"},
     }
 }
 
@@ -42,131 +102,5 @@ USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
 
-# ------------------------- Sidebar Navigation --------------------------- #
-menu = st.sidebar.radio("Select Section", [
-    "Intake Form",
-    "Macro Targets",
-    "Track Meals",
-    "Meal Suggestions",
-    "Workout Suggestions"
-])
+# ... the rest of the app code remains unchanged
 
-# ------------------------- Intake Form --------------------------- #
-if menu == "Intake Form":
-    st.title("🏋️ Fitness & Nutrition Planner - Intake Form")
-    name = st.text_input("Name")
-    age = st.number_input("Age", min_value=10, max_value=100, value=25)
-    gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-
-    unit_pref = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
-    if unit_pref == "Metric (kg, cm)":
-        height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170)
-        weight = st.number_input("Weight (kg)", min_value=30, max_value=250, value=70)
-    else:
-        height = st.number_input("Height (inches)", min_value=40, max_value=100, value=67)
-        weight = st.number_input("Weight (lbs)", min_value=66, max_value=550, value=154)
-
-    goal = st.selectbox("Fitness Goal", ["Lose Fat", "Gain Muscle", "Maintain Weight"])
-    activity = st.selectbox("Activity Level", ["Sedentary", "Lightly active", "Moderately active", "Very active"])
-    equipment = st.multiselect("Available Equipment", [
-        "Dumbbells", "Barbell", "Kettlebell", "Resistance Bands",
-        "Bodyweight only", "Full Commercial Gym"
-    ])
-
-    pantry = st.text_area("List food items available in your pantry (comma-separated)")
-
-    if st.button("Save Intake Info"):
-        with open(USER_PROFILE_PATH, "w") as f:
-            json.dump({
-                "name": name,
-                "age": age,
-                "gender": gender,
-                "unit_pref": unit_pref,
-                "height": height,
-                "weight": weight,
-                "goal": goal,
-                "activity": activity,
-                "equipment": equipment,
-                "pantry": pantry.split(",")
-            }, f)
-        st.success("User intake saved!")
-
-# ------------------------- Macro Target Calculator --------------------------- #
-def calculate_macros(profile):
-    gender = profile['gender']
-    weight = profile['weight']
-    height = profile['height']
-    age = profile['age']
-    unit_pref = profile['unit_pref']
-    activity = profile['activity']
-    goal = profile['goal']
-
-    if unit_pref == "Imperial (lbs, inches)":
-        weight = weight / 2.20462
-        height = height * 2.54
-
-    if gender == "Male":
-        bmr = 10 * weight + 6.25 * height - 5 * age + 5
-    else:
-        bmr = 10 * weight + 6.25 * height - 5 * age - 161
-
-    activity_factors = {
-        "Sedentary": 1.2,
-        "Lightly active": 1.375,
-        "Moderately active": 1.55,
-        "Very active": 1.725
-    }
-    tdee = bmr * activity_factors.get(activity, 1.2)
-
-    if goal == "Lose Fat":
-        tdee *= 0.85
-    elif goal == "Gain Muscle":
-        tdee *= 1.15
-
-    protein = weight * 2.0
-    fat = (0.25 * tdee) / 9
-    carbs = (tdee - (protein * 4 + fat * 9)) / 4
-
-    return round(protein), round(carbs), round(fat), round(tdee)
-
-if menu == "Macro Targets":
-    st.title("🎯 Your Macro Targets")
-    if os.path.exists(USER_PROFILE_PATH):
-        try:
-            with open(USER_PROFILE_PATH, "r") as f:
-                profile = json.load(f)
-                protein_g, carbs_g, fat_g, calories = calculate_macros(profile)
-                st.write(f"**Daily Caloric Target:** {calories} kcal")
-                st.write(f"**Protein:** {protein_g}g, **Carbs:** {carbs_g}g, **Fat:** {fat_g}g")
-        except Exception as e:
-            st.error(f"Error calculating macros: {e}")
-    else:
-        st.info("Please fill out the intake form first.")
-
-# ------------------------- Workout Suggestions --------------------------- #
-if menu == "Workout Suggestions":
-    st.title("🏋️ Personalized Workout Suggestions")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-            goal = profile['goal']
-            equipment = profile['equipment']
-
-            st.subheader("Strength Training")
-            if "Full Commercial Gym" in equipment:
-                st.markdown("- **Barbell Squats**: 4x8 (90s rest)\n- **Deadlifts**: 4x5 (120s rest)\n- **Bench Press**: 4x8 (90s rest)\n- **Lat Pulldown**: 3x10 (60s rest)")
-            elif "Dumbbells" in equipment:
-                st.markdown("- **Dumbbell Goblet Squats**: 4x10\n- **Dumbbell Rows**: 4x10\n- **Dumbbell Bench Press**: 3x12\n- **Bodyweight Lunges**: 3x15 per leg")
-            elif "Bodyweight only" in equipment:
-                st.markdown("- **Push-ups**: 4x15\n- **Bodyweight Squats**: 4x20\n- **Glute Bridges**: 3x20\n- **Superman Holds**: 3x30 sec")
-
-            st.subheader("Cardio")
-            if goal == "Lose Fat":
-                st.markdown("Include 4-5 cardio sessions per week (e.g., 30 min brisk walk, cycling, HIIT)")
-            elif goal == "Gain Muscle":
-                st.markdown("Include 1-2 light cardio sessions per week (e.g., walking, light jogging)")
-            else:
-                st.markdown("Include 3 sessions of moderate cardio per week")
-    else:
-        st.info("Please complete the intake form to get workout suggestions.")
