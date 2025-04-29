@@ -15,6 +15,58 @@ import csv
 import math
 import random
 
+# ------------------- Fitness-Themed Styling ------------------- #
+st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
+
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background-color: #1E1E1E;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .stMarkdown {
+            color: #F5C518;
+        }
+        .stSidebar {
+            background-color: #111111;
+        }
+        .css-1aumxhk, .css-1d391kg, .css-qrbaxs, .css-1cpxqw2, .css-ffhzg2 {
+            color: white;
+        }
+        .css-1v3fvcr, .css-1v0mbdj {
+            background-color: #2E2E2E !important;
+        }
+        .css-1q8dd3e, .css-1x8cf1d, .css-1vzeuhh, .css-1u2j2wh {
+            color: white !important;
+        }
+        .css-1vzeuhh, .css-1u2j2wh {
+            background-color: #3B3B3B !important;
+        }
+        .block-container {
+            padding-top: 2rem;
+        }
+        .stButton>button {
+            background-color: #F5C518;
+            color: black;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+        }
+        .stTextInput>div>div>input {
+            background-color: #3B3B3B;
+            color: white;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Ensure the data directory exists
+if not os.path.exists("data"):
+    os.makedirs("data")
+
 # ------------------------- Constants --------------------------- #
 
 FOOD_DB = {
@@ -37,60 +89,53 @@ FOOD_DB = {
     "tilapia": {"protein": 26, "carbs": 0, "fat": 3, "unit": "100g"},
     "sardines": {"protein": 25, "carbs": 0, "fat": 11, "unit": "100g"},
 
-    # Carbs
+    # Carbs (extended for grains)
     "brown rice": {"protein": 5, "carbs": 45, "fat": 1.5, "unit": "1 cup cooked"},
+    "white rice": {"protein": 4, "carbs": 45, "fat": 0.4, "unit": "1 cup cooked"},
     "oats": {"protein": 5, "carbs": 27, "fat": 3, "unit": "1/2 cup"},
-    "banana": {"protein": 1, "carbs": 27, "fat": 0.3, "unit": "1 medium"},
-    "apple": {"protein": 0.5, "carbs": 25, "fat": 0.3, "unit": "1 medium"},
-    "orange": {"protein": 1, "carbs": 20, "fat": 0.2, "unit": "1 medium"},
-    "grapes": {"protein": 1, "carbs": 27, "fat": 0.2, "unit": "1 cup"},
-    "strawberries": {"protein": 1, "carbs": 12, "fat": 0.2, "unit": "1 cup"},
-    "blueberries": {"protein": 1, "carbs": 21, "fat": 0.5, "unit": "1 cup"},
-    "pineapple": {"protein": 1, "carbs": 22, "fat": 0.2, "unit": "1 cup"},
-    "watermelon": {"protein": 1, "carbs": 11, "fat": 0.2, "unit": "1 cup"},
-    "peach": {"protein": 1, "carbs": 15, "fat": 0.2, "unit": "1 medium"},
-    "mango": {"protein": 1, "carbs": 25, "fat": 0.6, "unit": "1 cup"},
-
-    # Vegetables
-    "broccoli": {"protein": 4, "carbs": 11, "fat": 0.5, "unit": "1 cup"},
-    "carrots": {"protein": 1, "carbs": 12, "fat": 0.3, "unit": "1 cup sliced"},
-    "spinach": {"protein": 1, "carbs": 1, "fat": 0.1, "unit": "1 cup raw"},
-    "kale": {"protein": 2, "carbs": 7, "fat": 0.6, "unit": "1 cup"},
-    "zucchini": {"protein": 1, "carbs": 4, "fat": 0.2, "unit": "1 cup sliced"},
-    "bell pepper": {"protein": 1, "carbs": 9, "fat": 0.3, "unit": "1 medium"},
-    "cauliflower": {"protein": 2, "carbs": 5, "fat": 0.3, "unit": "1 cup"},
-    "onion": {"protein": 1, "carbs": 11, "fat": 0.1, "unit": "1 medium"},
-    "tomato": {"protein": 1, "carbs": 5, "fat": 0.2, "unit": "1 medium"},
-    "cucumber": {"protein": 1, "carbs": 4, "fat": 0.1, "unit": "1/2 cucumber"},
+    "quinoa": {"protein": 8, "carbs": 39, "fat": 3.6, "unit": "1 cup cooked"},
+    "whole wheat bread": {"protein": 5, "carbs": 20, "fat": 1.2, "unit": "1 slice"},
+    "white bread": {"protein": 3, "carbs": 14, "fat": 1, "unit": "1 slice"},
+    "pasta": {"protein": 8, "carbs": 43, "fat": 1.3, "unit": "1 cup cooked"},
+    "couscous": {"protein": 6, "carbs": 36, "fat": 0.6, "unit": "1 cup cooked"},
+    "barley": {"protein": 3.5, "carbs": 44, "fat": 0.5, "unit": "1 cup cooked"},
+    "corn": {"protein": 3, "carbs": 27, "fat": 1, "unit": "1 cup"},
 
     # Dairy
     "milk (whole)": {"protein": 8, "carbs": 12, "fat": 8, "unit": "1 cup"},
     "milk (2%)": {"protein": 8, "carbs": 12, "fat": 5, "unit": "1 cup"},
     "milk (skim)": {"protein": 8, "carbs": 12, "fat": 0, "unit": "1 cup"},
-    "greek yogurt": {"protein": 15, "carbs": 9, "fat": 0.5, "unit": "170g"},
-    "cottage cheese": {"protein": 13, "carbs": 4, "fat": 5, "unit": "1/2 cup"},
-    "cheddar cheese": {"protein": 7, "carbs": 1, "fat": 9, "unit": "28g"},
-    "mozzarella cheese": {"protein": 7, "carbs": 1, "fat": 6, "unit": "28g"},
-    "cream cheese": {"protein": 2, "carbs": 2, "fat": 10, "unit": "28g"},
+    "cheddar cheese": {"protein": 7, "carbs": 1, "fat": 9, "unit": "1 slice"},
+    "cottage cheese": {"protein": 13, "carbs": 4, "fat": 2, "unit": "1/2 cup"},
+    "greek yogurt": {"protein": 20, "carbs": 7, "fat": 0, "unit": "1 cup"},
+    "mozzarella": {"protein": 6, "carbs": 1, "fat": 5, "unit": "1 oz"},
+    "parmesan": {"protein": 10, "carbs": 1, "fat": 7, "unit": "1 oz"},
+    "ricotta": {"protein": 7, "carbs": 3, "fat": 6, "unit": "1/4 cup"},
     "butter": {"protein": 0, "carbs": 0, "fat": 11, "unit": "1 tbsp"},
-    "yogurt (plain)": {"protein": 9, "carbs": 17, "fat": 3.5, "unit": "1 cup"},
 
-    # Fats
-    "almonds": {"protein": 6, "carbs": 6, "fat": 14, "unit": "28g"},
-    "olive oil": {"protein": 0, "carbs": 0, "fat": 14, "unit": "1 tbsp"},
-    "peanut butter": {"protein": 8, "carbs": 6, "fat": 16, "unit": "2 tbsp"},
+    # Fruits
+    "banana": {"protein": 1.3, "carbs": 27, "fat": 0.3, "unit": "1 medium"},
+    "apple": {"protein": 0.5, "carbs": 25, "fat": 0.3, "unit": "1 medium"},
+    "orange": {"protein": 1.2, "carbs": 15.4, "fat": 0.2, "unit": "1 medium"},
+    "strawberry": {"protein": 1, "carbs": 12, "fat": 0.3, "unit": "1 cup"},
+    "blueberry": {"protein": 1, "carbs": 21, "fat": 0.5, "unit": "1 cup"},
+    "grapes": {"protein": 0.6, "carbs": 27, "fat": 0.3, "unit": "1 cup"},
+    "kiwi": {"protein": 2, "carbs": 15, "fat": 0.9, "unit": "1 medium"},
+    "pineapple": {"protein": 1, "carbs": 22, "fat": 0.2, "unit": "1 cup"},
+    "mango": {"protein": 1, "carbs": 25, "fat": 0.6, "unit": "1 cup"},
+    "peach": {"protein": 1, "carbs": 15, "fat": 0.4, "unit": "1 medium"},
 
-    # Drinks
-    "black coffee": {"protein": 0, "carbs": 0, "fat": 0, "unit": "1 cup"},
-    "green tea": {"protein": 0, "carbs": 0, "fat": 0, "unit": "1 cup"},
-    "orange juice": {"protein": 2, "carbs": 26, "fat": 0.5, "unit": "1 cup"},
-    "soda": {"protein": 0, "carbs": 39, "fat": 0, "unit": "1 can (355ml)"},
-    "beer": {"protein": 1, "carbs": 13, "fat": 0, "unit": "1 can (355ml)"},
-    "wine (red)": {"protein": 0.1, "carbs": 4, "fat": 0, "unit": "5 oz"},
-    "milkshake": {"protein": 8, "carbs": 50, "fat": 10, "unit": "1 cup"},
-    "sports drink": {"protein": 0, "carbs": 21, "fat": 0, "unit": "1 bottle (500ml)"},
-    "energy drink": {"protein": 1, "carbs": 27, "fat": 0, "unit": "1 can (250ml)"},
-    "protein shake": {"protein": 20, "carbs": 5, "fat": 2, "unit": "1 scoop + water or milk"}
+    # Vegetables
+    "broccoli": {"protein": 2.5, "carbs": 6, "fat": 0.3, "unit": "1 cup chopped"},
+    "spinach": {"protein": 3, "carbs": 4, "fat": 0.4, "unit": "1 cup cooked"},
+    "carrot": {"protein": 1, "carbs": 12, "fat": 0.3, "unit": "1 cup sliced"},
+    "cauliflower": {"protein": 2, "carbs": 5, "fat": 0.1, "unit": "1 cup chopped"},
+    "zucchini": {"protein": 1.5, "carbs": 3.5, "fat": 0.3, "unit": "1 cup sliced"},
+    "green beans": {"protein": 2, "carbs": 7, "fat": 0.3, "unit": "1 cup"},
+    "asparagus": {"protein": 2.9, "carbs": 5.2, "fat": 0.2, "unit": "1 cup"},
+    "bell pepper": {"protein": 1, "carbs": 9, "fat": 0.2, "unit": "1 cup chopped"},
+    "kale": {"protein": 2.5, "carbs": 7, "fat": 0.5, "unit": "1 cup chopped"},
+    "onion": {"protein": 1, "carbs": 11, "fat": 0.1, "unit": "1 cup chopped"}
 }
 
 SEASONING_SUGGESTIONS = [
@@ -101,30 +146,3 @@ SEASONING_SUGGESTIONS = [
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
-
-# ------------------------- Utility Functions --------------------------- #
-
-# ... (rest of utility functions remain unchanged) ...
-
-# ------------------------- Streamlit App --------------------------- #
-
-st.title("\U0001F4AA Personal Trainer & Nutrition Coach")
-
-menu = [
-    "User Intake Form",
-    "Set Macro Targets",
-    "Workout Program",
-    "Meal Plan",
-    "Ingredient-Based Suggestions",
-    "Log Stats",
-    "View Progress",
-    "Macro Tracking",
-    "Download PDF"
-]
-
-choice = st.sidebar.selectbox("Menu", menu)
-
-# ... (existing blocks like Intake Form, Macro Tracking, Meal Plan remain unchanged) ...
-
-# ... (unchanged sections of the app code) ...
-
