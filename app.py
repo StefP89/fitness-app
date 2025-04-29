@@ -15,52 +15,8 @@ import csv
 import math
 import random
 
-# ------------------- Fitness-Themed Styling ------------------- #
+# ------------------- Reset to Default Streamlit Theme ------------------- #
 st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
-
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background-color: #1E1E1E;
-            color: #F5F5F5;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: #FFCC00;
-        }
-        .stSidebar {
-            background-color: #252526;
-        }
-        .stButton>button {
-            background-color: #FFCC00;
-            color: black;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-            border: none;
-        }
-        .stTextInput>div>div>input,
-        .stSelectbox>div>div>div>input,
-        .stNumberInput>div>div>input {
-            background-color: #2D2D2D;
-            color: white;
-            border-radius: 6px;
-        }
-        .stDataFrame {
-            background-color: #2D2D2D;
-            color: white;
-        }
-        .css-1v3fvcr {
-            background-color: #2E2E2E;
-        }
-        .block-container {
-            padding-top: 2rem;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # Ensure the data directory exists
 if not os.path.exists("data"):
@@ -145,3 +101,4 @@ SEASONING_SUGGESTIONS = [
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
+
