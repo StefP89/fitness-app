@@ -4,16 +4,9 @@ import streamlit as st
 import datetime
 import json
 import os
-from fpdf import FPDF
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+from matplotlib import pyplot as plt
 from matplotlib.dates import DateFormatter
-import re
-import io
 import base64
-import csv
-import math
-import random
 
 # ------------------- Reset to Default Streamlit Theme ------------------- #
 st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
@@ -101,4 +94,3 @@ SEASONING_SUGGESTIONS = [
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
-
