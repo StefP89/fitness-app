@@ -25,8 +25,24 @@ if st.sidebar.button("Reset App"):
 
 # ------------------------- Constants --------------------------- #
 
-# (Same FOOD_DB and SEASONING_SUGGESTIONS remain unchanged)
-# [--- Snipped for brevity --- Assume full FOOD_DB and SEASONING_SUGGESTIONS here ---]
+# Placeholder constants for demonstration
+FOOD_DB = {
+    "Fruits": {
+        "Apple": {"protein": 0.3, "carbs": 14, "fat": 0.2, "unit": "1 medium"},
+        "Banana": {"protein": 1.3, "carbs": 27, "fat": 0.3, "unit": "1 medium"},
+    },
+    "Vegetables": {
+        "Broccoli": {"protein": 2.6, "carbs": 6, "fat": 0.3, "unit": "1 cup chopped"},
+    }
+}
+
+SEASONING_SUGGESTIONS = [
+    "Lemon Pepper",
+    "Garlic Herb",
+    "Smoked Paprika",
+    "Curry Powder",
+    "Rosemary and Thyme"
+]
 
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
@@ -69,9 +85,9 @@ with st.expander("🎯 Macro Targets"):
     if os.path.exists(USER_PROFILE_PATH):
         with open(USER_PROFILE_PATH, "r") as f:
             profile = json.load(f)
-            p, c, f, cal = calculate_macros(profile['weight'], profile['goal'])
-            st.write(f"**Daily Caloric Target:** {cal} kcal")
-            st.write(f"**Protein:** {p}g, **Carbs:** {c}g, **Fat:** {f}g")
+            protein_g, carbs_g, fat_g, calories = calculate_macros(profile['weight'], profile['goal'])
+            st.write(f"**Daily Caloric Target:** {calories} kcal")
+            st.write(f"**Protein:** {protein_g}g, **Carbs:** {carbs_g}g, **Fat:** {fat_g}g")
     else:
         st.info("Please fill out the intake form first.")
 
