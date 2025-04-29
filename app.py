@@ -23,40 +23,39 @@ st.markdown(
     <style>
         .stApp {
             background-color: #1E1E1E;
-            color: white;
-            font-family: 'Arial', sans-serif;
+            color: #F5F5F5;
+            font-family: 'Segoe UI', sans-serif;
         }
-        h1, h2, h3, h4, h5, h6, .stMarkdown {
-            color: #F5C518;
+        h1, h2, h3, h4, h5, h6 {
+            color: #FFCC00;
         }
         .stSidebar {
-            background-color: #111111;
+            background-color: #252526;
         }
-        .css-1aumxhk, .css-1d391kg, .css-qrbaxs, .css-1cpxqw2, .css-ffhzg2 {
+        .stButton>button {
+            background-color: #FFCC00;
+            color: black;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            border: none;
+        }
+        .stTextInput>div>div>input,
+        .stSelectbox>div>div>div>input,
+        .stNumberInput>div>div>input {
+            background-color: #2D2D2D;
+            color: white;
+            border-radius: 6px;
+        }
+        .stDataFrame {
+            background-color: #2D2D2D;
             color: white;
         }
-        .css-1v3fvcr, .css-1v0mbdj {
-            background-color: #2E2E2E !important;
-        }
-        .css-1q8dd3e, .css-1x8cf1d, .css-1vzeuhh, .css-1u2j2wh {
-            color: white !important;
-        }
-        .css-1vzeuhh, .css-1u2j2wh {
-            background-color: #3B3B3B !important;
+        .css-1v3fvcr {
+            background-color: #2E2E2E;
         }
         .block-container {
             padding-top: 2rem;
-        }
-        .stButton>button {
-            background-color: #F5C518;
-            color: black;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            font-weight: bold;
-        }
-        .stTextInput>div>div>input {
-            background-color: #3B3B3B;
-            color: white;
         }
     </style>
     """,
@@ -146,4 +145,3 @@ SEASONING_SUGGESTIONS = [
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
-
