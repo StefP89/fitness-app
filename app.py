@@ -19,8 +19,11 @@ if not os.path.exists("data"):
 
 # ------------------------- Safe Session Reset --------------------------- #
 if st.sidebar.button("Reset App"):
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
+    st.session_state.clear()
+    st.session_state["reset_triggered"] = True
+
+if st.session_state.get("reset_triggered"):
+    st.session_state.pop("reset_triggered")
     st.experimental_rerun()
 
 # ------------------------- Constants --------------------------- #
@@ -165,3 +168,4 @@ if os.path.exists(USER_PROFILE_PATH):
         st.write(f"- {w}")
 else:
     st.info("Please complete intake form to get customized workouts.")
+
