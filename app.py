@@ -24,7 +24,7 @@ if st.sidebar.button("Reset App"):
 
 if st.session_state.get("reset_triggered"):
     st.session_state.pop("reset_triggered")
-    st.experimental_rerun()
+    st.rerun()
 
 # ------------------------- Constants --------------------------- #
 
@@ -86,11 +86,19 @@ def calculate_macros(weight, goal):
 
 with st.expander("🎯 Macro Targets"):
     if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-            protein_g, carbs_g, fat_g, calories = calculate_macros(profile['weight'], profile['goal'])
-            st.write(f"**Daily Caloric Target:** {calories} kcal")
-            st.write(f"**Protein:** {protein_g}g, **Carbs:** {carbs_g}g, **Fat:** {fat_g}g")
+        try:
+            with open(USER_PROFILE_PATH, "r") as f:
+                profile = json.load(f)
+                weight = profile.get('weight')
+                goal = profile.get('goal')
+                if weight and goal:
+                    protein_g, carbs_g, fat_g, calories = calculate_macros(weight, goal)
+                    st.write(f"**Daily Caloric Target:** {calories} kcal")
+                    st.write(f"**Protein:** {protein_g}g, **Carbs:** {carbs_g}g, **Fat:** {fat_g}g")
+                else:
+                    st.warning("Weight or goal missing from profile. Please complete the intake form.")
+        except Exception as e:
+            st.error(f"Error reading user profile: {e}")
     else:
         st.info("Please fill out the intake form first.")
 
