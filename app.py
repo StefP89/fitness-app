@@ -38,14 +38,6 @@ FOOD_DB = {
     }
 }
 
-SEASONING_SUGGESTIONS = [
-    "Lemon Pepper",
-    "Garlic Herb",
-    "Smoked Paprika",
-    "Curry Powder",
-    "Rosemary and Thyme"
-]
-
 USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
 MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
@@ -65,15 +57,35 @@ if menu == "Intake Form":
     name = st.text_input("Name")
     age = st.number_input("Age", min_value=10, max_value=100, value=25)
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-    height = st.number_input("Height", min_value=100, max_value=250, value=170, help="in cm")
-    weight = st.number_input("Weight", min_value=30, max_value=250, value=70, help="in kg")
+
+    unit_pref = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
+    if unit_pref == "Metric (kg, cm)":
+        height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170)
+        weight = st.number_input("Weight (kg)", min_value=30, max_value=250, value=70)
+    else:
+        height = st.number_input("Height (inches)", min_value=40, max_value=100, value=67)
+        weight = st.number_input("Weight (lbs)", min_value=66, max_value=550, value=154)
+
     goal = st.selectbox("Fitness Goal", ["Lose Fat", "Gain Muscle", "Maintain Weight"])
     activity = st.selectbox("Activity Level", ["Sedentary", "Lightly active", "Moderately active", "Very active"])
-    equipment = st.multiselect("Available Equipment", ["Dumbbells", "Barbell", "Kettlebell", "Resistance Bands", "Bodyweight only"])
+    equipment = st.multiselect("Available Equipment", ["Dumbbells", "Barbell", "Kettlebell", "Resistance Bands", "Bodyweight only", "Full Commercial Gym"])
+
+    pantry = st.text_area("List food items available in your pantry (comma-separated)")
 
     if st.button("Save Intake Info"):
         with open(USER_PROFILE_PATH, "w") as f:
-            json.dump({"name": name, "age": age, "gender": gender, "height": height, "weight": weight, "goal": goal, "activity": activity, "equipment": equipment}, f)
+            json.dump({
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "unit_pref": unit_pref,
+                "height": height,
+                "weight": weight,
+                "goal": goal,
+                "activity": activity,
+                "equipment": equipment,
+                "pantry": pantry.split(",")
+            }, f)
         st.success("User intake saved!")
 
 # ------------------------- Macro Target Calculator --------------------------- #
@@ -161,7 +173,6 @@ if menu == "Meal Suggestions":
             item = items[i % len(items)]
             suggestion = FOOD_DB[selected_group][item]
             st.write(f"- **{item.title()}** ({suggestion['unit']}): {suggestion['protein']}g P / {suggestion['carbs']}g C / {suggestion['fat']}g F")
-            st.write(f"  Suggested seasoning: *{SEASONING_SUGGESTIONS[i % len(SEASONING_SUGGESTIONS)]}*")
 
 # ------------------------- Workout Generator --------------------------- #
 if menu == "Workout Suggestions":
@@ -184,3 +195,4 @@ if menu == "Workout Suggestions":
             st.write(f"- {w}")
     else:
         st.info("Please complete intake form to get customized workouts.")
+
