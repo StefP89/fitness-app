@@ -15,6 +15,15 @@ st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
 if not os.path.exists("data"):
     os.makedirs("data")
 
+# ------------------------- Safe Session Reset --------------------------- #
+if "rerun_triggered" not in st.session_state:
+    st.session_state["rerun_triggered"] = False
+
+if st.sidebar.button("Reset App") and not st.session_state["rerun_triggered"]:
+    st.session_state.clear()
+    st.session_state["rerun_triggered"] = True
+    st.experimental_rerun()
+
 # ------------------------- Constants --------------------------- #
 
 FOOD_DB = {
