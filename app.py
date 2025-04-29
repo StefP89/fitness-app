@@ -68,7 +68,10 @@ if menu == "Intake Form":
 
     goal = st.selectbox("Fitness Goal", ["Lose Fat", "Gain Muscle", "Maintain Weight"])
     activity = st.selectbox("Activity Level", ["Sedentary", "Lightly active", "Moderately active", "Very active"])
-    equipment = st.multiselect("Available Equipment", ["Dumbbells", "Barbell", "Kettlebell", "Resistance Bands", "Bodyweight only", "Full Commercial Gym"])
+    equipment = st.multiselect("Available Equipment", [
+        "Dumbbells", "Barbell", "Kettlebell", "Resistance Bands",
+        "Bodyweight only", "Full Commercial Gym"
+    ])
 
     pantry = st.text_area("List food items available in your pantry (comma-separated)")
 
@@ -98,12 +101,10 @@ def calculate_macros(profile):
     activity = profile['activity']
     goal = profile['goal']
 
-    # Convert to metric if needed
     if unit_pref == "Imperial (lbs, inches)":
         weight = weight / 2.20462
         height = height * 2.54
 
-    # BMR calculation
     if gender == "Male":
         bmr = 10 * weight + 6.25 * height - 5 * age + 5
     else:
@@ -122,7 +123,7 @@ def calculate_macros(profile):
     elif goal == "Gain Muscle":
         tdee *= 1.15
 
-    protein = weight * 2.0  # g/kg
+    protein = weight * 2.0
     fat = (0.25 * tdee) / 9
     carbs = (tdee - (protein * 4 + fat * 9)) / 4
 
@@ -142,5 +143,30 @@ if menu == "Macro Targets":
     else:
         st.info("Please fill out the intake form first.")
 
-# The rest of the app remains unchanged (Track Meals, Meal Suggestions, Workout Suggestions)
-# for brevity but will still function correctly with the updated macro logic.
+# ------------------------- Workout Suggestions --------------------------- #
+if menu == "Workout Suggestions":
+    st.title("🏋️ Personalized Workout Suggestions")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH, "r") as f:
+            profile = json.load(f)
+            goal = profile['goal']
+            equipment = profile['equipment']
+
+            st.subheader("Strength Training")
+            if "Full Commercial Gym" in equipment:
+                st.markdown("- **Barbell Squats**: 4x8 (90s rest)\n- **Deadlifts**: 4x5 (120s rest)\n- **Bench Press**: 4x8 (90s rest)\n- **Lat Pulldown**: 3x10 (60s rest)")
+            elif "Dumbbells" in equipment:
+                st.markdown("- **Dumbbell Goblet Squats**: 4x10\n- **Dumbbell Rows**: 4x10\n- **Dumbbell Bench Press**: 3x12\n- **Bodyweight Lunges**: 3x15 per leg")
+            elif "Bodyweight only" in equipment:
+                st.markdown("- **Push-ups**: 4x15\n- **Bodyweight Squats**: 4x20\n- **Glute Bridges**: 3x20\n- **Superman Holds**: 3x30 sec")
+
+            st.subheader("Cardio")
+            if goal == "Lose Fat":
+                st.markdown("Include 4-5 cardio sessions per week (e.g., 30 min brisk walk, cycling, HIIT)")
+            elif goal == "Gain Muscle":
+                st.markdown("Include 1-2 light cardio sessions per week (e.g., walking, light jogging)")
+            else:
+                st.markdown("Include 3 sessions of moderate cardio per week")
+    else:
+        st.info("Please complete the intake form to get workout suggestions.")
