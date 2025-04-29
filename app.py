@@ -16,12 +16,9 @@ if not os.path.exists("data"):
     os.makedirs("data")
 
 # ------------------------- Safe Session Reset --------------------------- #
-if "rerun_triggered" not in st.session_state:
-    st.session_state["rerun_triggered"] = False
-
-if st.sidebar.button("Reset App") and not st.session_state["rerun_triggered"]:
-    st.session_state.clear()
-    st.session_state["rerun_triggered"] = True
+if st.sidebar.button("Reset App"):
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
     st.experimental_rerun()
 
 # ------------------------- Constants --------------------------- #
