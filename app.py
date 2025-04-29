@@ -176,3 +176,4 @@ if os.path.exists(USER_PROFILE_PATH):
         st.write(f"- {w}")
 else:
     st.info("Please complete intake form to get customized workouts.")
+
