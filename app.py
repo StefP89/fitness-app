@@ -184,115 +184,17 @@ if page == "Workout Suggestions":
 
         plan = get_workout(goal, equipment)
 
-        for day, routine in plan:
-            st.markdown(f"### {day}")
-            for move in routine:
-                st.write(f"- {move}")
+        if plan:
+            for workout_day in plan:
+                if isinstance(workout_day, tuple) and len(workout_day) == 2:
+                    day, routine = workout_day
+                    st.markdown(f"### {day}")
+                    for move in routine:
+                        st.write(f"- {move}")
+                else:
+                    st.warning("Unexpected workout format.")
+        else:
+            st.warning("No workout plan found for your selected goal and equipment.")
 
     else:
         st.warning("Please fill out the intake form first.")
-
-# ------------------------- Log Workout --------------------------- #
-if page == "Log Workout":
-    st.title("Log Today's Workout")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        date = st.date_input("Workout Date", value=datetime.date.today())
-        workout_entries = []
-
-        with st.form("log_form"):
-            st.write("Enter each exercise performed:")
-            for i in range(5):
-                exercise = st.text_input(f"Exercise {i+1}")
-                sets = st.number_input(f"Sets for {exercise}", min_value=1, max_value=10, value=3, key=f"sets_{i}")
-                reps = st.text_input(f"Reps per set (e.g. 12,12,10)", key=f"reps_{i}")
-                weight = st.text_input(f"Weight used per set (e.g. 50,50,55)", key=f"weight_{i}")
-                if exercise:
-                    workout_entries.append({"exercise": exercise, "sets": sets, "reps": reps, "weight": weight})
-
-            submit_log = st.form_submit_button("Save Workout Log")
-
-        if submit_log:
-            log_data = {
-                "date": str(date),
-                "entries": workout_entries
-            }
-
-            if os.path.exists(WORKOUT_LOG_PATH):
-                with open(WORKOUT_LOG_PATH, "r") as f:
-                    logs = json.load(f)
-            else:
-                logs = []
-
-            logs.append(log_data)
-            with open(WORKOUT_LOG_PATH, "w") as f:
-                json.dump(logs, f)
-
-            st.success("Workout logged successfully!")
-
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------------- Macro Calculator --------------------------- #
-if page == "Macro Calculator":
-    st.title("Macro Calculator")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-
-        protein, carbs, fat, calories = calculate_macros(
-            profile["weight"],
-            profile["height"],
-            profile["age"],
-            profile["gender"],
-            profile["goal"],
-            profile["unit_preference"]
-        )
-
-        st.subheader("Your Daily Macro Targets")
-        st.metric("Calories", f"{calories} kcal")
-        st.metric("Protein", f"{protein} g")
-        st.metric("Carbohydrates", f"{carbs} g")
-        st.metric("Fat", f"{fat} g")
-
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------------- Log Progress --------------------------- #
-if page == "Log Progress":
-    st.title("Log Your Progress")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with st.form("progress_form"):
-            date = st.date_input("Date", value=datetime.date.today())
-            weight = st.number_input("Current Weight", min_value=20.0, max_value=300.0, step=0.1)
-            waist = st.number_input("Waist (optional, cm/in)", min_value=0.0, step=0.1)
-            hips = st.number_input("Hips (optional, cm/in)", min_value=0.0, step=0.1)
-            chest = st.number_input("Chest (optional, cm/in)", min_value=0.0, step=0.1)
-            submit_progress = st.form_submit_button("Save Progress")
-
-        if submit_progress:
-            progress_entry = {
-                "date": str(date),
-                "weight": weight,
-                "waist": waist,
-                "hips": hips,
-                "chest": chest
-            }
-
-            if os.path.exists(PROGRESS_LOG_PATH):
-                with open(PROGRESS_LOG_PATH, "r") as f:
-                    progress_log = json.load(f)
-            else:
-                progress_log = []
-
-            progress_log.append(progress_entry)
-
-            with open(PROGRESS_LOG_PATH, "w") as f:
-                json.dump(progress_log, f)
-
-            st.success("Progress saved successfully!")
-
-    else:
-        st.warning("Please complete the intake form first.")
