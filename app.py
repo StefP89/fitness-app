@@ -4,6 +4,7 @@ import streamlit as st
 import datetime
 import json
 import os
+import pandas as pd
 
 # ------------------- Reset to Default Streamlit Theme ------------------- #
 st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
@@ -198,3 +199,55 @@ if page == "Workout Suggestions":
 
     else:
         st.warning("Please fill out the intake form first.")
+
+# ------------------------- Log Progress --------------------------- #
+if page == "Log Progress":
+    st.title("Log Your Progress")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with st.form("progress_form"):
+            date = st.date_input("Date", value=datetime.date.today())
+            weight = st.number_input("Current Weight", min_value=20.0, max_value=300.0, step=0.1)
+            waist = st.number_input("Waist (optional, cm/in)", min_value=0.0, step=0.1)
+            hips = st.number_input("Hips (optional, cm/in)", min_value=0.0, step=0.1)
+            chest = st.number_input("Chest (optional, cm/in)", min_value=0.0, step=0.1)
+            submit_progress = st.form_submit_button("Save Progress")
+
+        if submit_progress:
+            progress_entry = {
+                "date": str(date),
+                "weight": weight,
+                "waist": waist,
+                "hips": hips,
+                "chest": chest
+            }
+
+            if os.path.exists(PROGRESS_LOG_PATH):
+                with open(PROGRESS_LOG_PATH, "r") as f:
+                    progress_log = json.load(f)
+            else:
+                progress_log = []
+
+            progress_log.append(progress_entry)
+
+            with open(PROGRESS_LOG_PATH, "w") as f:
+                json.dump(progress_log, f)
+
+            st.success("Progress saved successfully!")
+
+        # ---------------- Show Progress Table ---------------- #
+        if os.path.exists(PROGRESS_LOG_PATH):
+            with open(PROGRESS_LOG_PATH, "r") as f:
+                progress_log = json.load(f)
+
+            if progress_log:
+                df = pd.DataFrame(progress_log)
+                df['date'] = pd.to_datetime(df['date'])
+                df = df.sort_values(by='date', ascending=False)
+                st.subheader("Progress Log")
+                st.dataframe(df)
+            else:
+                st.info("No progress entries found yet.")
+    else:
+        st.warning("Please complete the intake form first.")
+
