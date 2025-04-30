@@ -73,73 +73,43 @@ def calculate_macros(weight, height, age, gender, goal, unit):
 
 # ------------------- Workout Plan Generator ------------------- #
 def get_workout(goal, equipment):
-    strength = {
-        "None - Bodyweight Only": ["Push-ups", "Squats", "Lunges", "Plank"],
-        "Home - Dumbbells and Bands": ["Dumbbell Press", "Goblet Squat", "Bent-over Rows", "Banded Pull Aparts"],
-        "Home - Barbell, Bench, Squat Rack": ["Barbell Squats", "Bench Press", "Barbell Rows", "Overhead Press"],
-        "Full Commercial Gym": ["Deadlifts", "Leg Press", "Lat Pulldown", "Incline Bench Press"]
+    workouts = {
+        "None - Bodyweight Only": [
+            {"exercise": "Push-ups", "sets": 3, "reps": 15, "rest": "30s"},
+            {"exercise": "Squats", "sets": 3, "reps": 20, "rest": "30s"},
+            {"exercise": "Lunges", "sets": 3, "reps": 12, "rest": "30s"},
+            {"exercise": "Plank", "sets": 3, "reps": "60s hold", "rest": "30s"}
+        ],
+        "Home - Dumbbells and Bands": [
+            {"exercise": "Dumbbell Press", "sets": 3, "reps": 12, "rest": "60s"},
+            {"exercise": "Goblet Squat", "sets": 3, "reps": 15, "rest": "60s"},
+            {"exercise": "Bent-over Rows", "sets": 3, "reps": 12, "rest": "60s"},
+            {"exercise": "Banded Pull Aparts", "sets": 3, "reps": 20, "rest": "45s"}
+        ],
+        "Home - Barbell, Bench, Squat Rack": [
+            {"exercise": "Barbell Squats", "sets": 4, "reps": 8, "rest": "90s"},
+            {"exercise": "Bench Press", "sets": 4, "reps": 8, "rest": "90s"},
+            {"exercise": "Barbell Rows", "sets": 4, "reps": 10, "rest": "90s"},
+            {"exercise": "Overhead Press", "sets": 3, "reps": 10, "rest": "60s"}
+        ],
+        "Full Commercial Gym": [
+            {"exercise": "Deadlifts", "sets": 4, "reps": 5, "rest": "2 min"},
+            {"exercise": "Leg Press", "sets": 4, "reps": 12, "rest": "90s"},
+            {"exercise": "Lat Pulldown", "sets": 4, "reps": 12, "rest": "90s"},
+            {"exercise": "Incline Bench Press", "sets": 3, "reps": 10, "rest": "90s"}
+        ]
     }
-    cardio = ["Running", "Cycling", "Jump Rope", "Rowing Machine"]
-    workout = strength.get(equipment, [])
+
+    cardio_options = [
+        {"exercise": "Running", "sets": 1, "reps": "20 min", "rest": ""},
+        {"exercise": "Cycling", "sets": 1, "reps": "30 min", "rest": ""},
+        {"exercise": "Jump Rope", "sets": 1, "reps": "15 min", "rest": ""}
+    ]
+
+    workout = workouts.get(equipment, [])
     if goal == "Fat Loss":
-        workout += cardio
+        workout += cardio_options
     return workout
-
-# ------------------- Main Page ------------------- #
-if page == "Main Page":
-    st.title("Welcome to Online Personal Trainer")
-    st.write("This is your centralized dashboard for tracking workouts, calculating macros, and monitoring progress.")
-    st.image("https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg", use_container_width=True)
-
-# ------------------- User Intake Form ------------------- #
-if page == "User Intake Form":
-    st.title("User Intake Form")
-
-    with st.form("intake_form"):
-        name = st.text_input("Full Name")
-        age = st.number_input("Age", min_value=10, max_value=100, value=30)
-        gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"])
-
-        unit_preference = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
-
-        if unit_preference == "Metric (kg, cm)":
-            weight = st.number_input("Weight (kg)", min_value=30.0, max_value=300.0, value=70.0, key="weight")
-            height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=175.0, key="height")
-        else:
-            weight = st.number_input("Weight (lbs)", min_value=66.0, max_value=660.0, value=154.0, key="weight")
-            height = st.number_input("Height (inches)", min_value=39.0, max_value=98.0, value=69.0, key="height")
-
-        goal = st.selectbox("What is your current fitness goal?", [
-            "Fat Loss",
-            "Muscle Gain",
-            "Maintenance"
-        ])
-
-        equipment = st.selectbox("Available Equipment", [
-            "None - Bodyweight Only",
-            "Home - Dumbbells and Bands",
-            "Home - Barbell, Bench, Squat Rack",
-            "Full Commercial Gym"
-        ])
-
-        submitted = st.form_submit_button("Save Profile")
-
-        if submitted:
-            user_profile = {
-                "name": name,
-                "age": age,
-                "gender": gender,
-                "unit_preference": unit_preference,
-                "weight": weight,
-                "height": height,
-                "goal": goal,
-                "equipment": equipment
-            }
-            with open(USER_PROFILE_PATH, "w") as f:
-                json.dump(user_profile, f)
-            for k, v in user_profile.items():
-                st.session_state[k] = v
-            st.success("Profile saved successfully!")
 
 # ------------------- Workout Suggestions ------------------- #
 if page == "Workout Suggestions":
@@ -151,53 +121,8 @@ if page == "Workout Suggestions":
 
         exercises = get_workout(profile["goal"], profile["equipment"])
 
-        st.subheader(f"Workout for {profile['goal']}")
+        st.subheader(f"Workout Plan for {profile['goal']} ({profile['equipment']})")
         for ex in exercises:
-            st.write(f"- {ex}")
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------- Log Workout ------------------- #
-if page == "Log Workout":
-    st.title("Log Your Workout")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-
-        exercises = get_workout(profile["goal"], profile["equipment"])
-
-        workout_data = []
-
-        with st.form("log_workout"):
-            for ex in exercises:
-                st.markdown(f"### {ex}")
-                sets = st.number_input(f"Number of sets for {ex}", min_value=1, max_value=10, value=3)
-                reps = []
-                weights = []
-                for i in range(sets):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        reps.append(st.number_input(f"Reps - Set {i+1} ({ex})", key=f"reps_{ex}_{i}"))
-                    with col2:
-                        weights.append(st.number_input(f"Weight - Set {i+1} ({ex})", key=f"weight_{ex}_{i}"))
-                workout_data.append({"exercise": ex, "sets": sets, "reps": reps, "weights": weights})
-
-            submit_log = st.form_submit_button("Save Workout")
-
-        if submit_log:
-            log_entry = {
-                "date": str(datetime.date.today()),
-                "workout": workout_data
-            }
-            if os.path.exists(WORKOUT_LOG_PATH):
-                with open(WORKOUT_LOG_PATH, "r") as f:
-                    workout_log = json.load(f)
-            else:
-                workout_log = []
-            workout_log.append(log_entry)
-            with open(WORKOUT_LOG_PATH, "w") as f:
-                json.dump(workout_log, f)
-            st.success("Workout logged successfully!")
+            st.markdown(f"**{ex['exercise']}** - {ex['sets']} sets x {ex['reps']} reps | Rest: {ex['rest']}")
     else:
         st.warning("Please complete the intake form first.")
