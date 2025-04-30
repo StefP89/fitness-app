@@ -185,3 +185,4 @@ if page == "Log Progress":
                 st.info("No progress entries found yet.")
     else:
         st.warning("Please complete the intake form first.")
+
