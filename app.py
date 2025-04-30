@@ -4,11 +4,6 @@ import streamlit as st
 import datetime
 import json
 import os
-import pandas as pd
-from matplotlib import pyplot as plt
-from matplotlib.dates import DateFormatter
-import base64
-from fpdf import FPDF
 
 # ------------------- Reset to Default Streamlit Theme ------------------- #
 st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
@@ -26,81 +21,236 @@ if st.session_state.get("reset_triggered"):
     st.session_state.pop("reset_triggered")
     st.rerun()
 
-# ------------------------- Constants --------------------------- #
+# ------------------------- Sidebar Navigation --------------------------- #
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Go to", [
+    "User Intake Form",
+    "Workout Suggestions",
+    "Log Workout",
+    "Macro Calculator"
+])
 
-FOOD_DB = {
-    "Fruits": {
-        "Apple": {"protein": 0.3, "carbs": 14, "fat": 0.2, "unit": "1 medium"},
-        "Banana": {"protein": 1.3, "carbs": 27, "fat": 0.3, "unit": "1 medium"},
-        "Orange": {"protein": 1.2, "carbs": 15.4, "fat": 0.2, "unit": "1 medium"},
-        "Grapes": {"protein": 0.6, "carbs": 17, "fat": 0.2, "unit": "1 cup"},
-        "Strawberries": {"protein": 1.0, "carbs": 11.7, "fat": 0.4, "unit": "1 cup"},
-        "Blueberries": {"protein": 1.1, "carbs": 21, "fat": 0.5, "unit": "1 cup"},
-        "Pineapple": {"protein": 0.9, "carbs": 21.6, "fat": 0.2, "unit": "1 cup"},
-        "Watermelon": {"protein": 0.9, "carbs": 11.5, "fat": 0.2, "unit": "1 cup"},
-        "Mango": {"protein": 0.8, "carbs": 25, "fat": 0.6, "unit": "1 fruit"},
-        "Pear": {"protein": 0.6, "carbs": 22, "fat": 0.2, "unit": "1 medium"},
-    },
-    "Vegetables": {
-        "Broccoli": {"protein": 2.6, "carbs": 6, "fat": 0.3, "unit": "1 cup chopped"},
-        "Carrot": {"protein": 0.9, "carbs": 10, "fat": 0.2, "unit": "1 medium"},
-        "Spinach": {"protein": 1.0, "carbs": 1.1, "fat": 0.4, "unit": "1 cup raw"},
-        "Kale": {"protein": 2.2, "carbs": 6.7, "fat": 0.6, "unit": "1 cup"},
-        "Zucchini": {"protein": 1.2, "carbs": 3.5, "fat": 0.3, "unit": "1 medium"},
-        "Bell Pepper": {"protein": 1.0, "carbs": 9, "fat": 0.2, "unit": "1 medium"},
-        "Cucumber": {"protein": 0.7, "carbs": 4, "fat": 0.1, "unit": "1 medium"},
-        "Tomato": {"protein": 1.1, "carbs": 5, "fat": 0.2, "unit": "1 medium"},
-        "Cauliflower": {"protein": 2.0, "carbs": 5, "fat": 0.3, "unit": "1 cup"},
-        "Green Beans": {"protein": 2.4, "carbs": 7, "fat": 0.3, "unit": "1 cup"},
-    },
-    "Grains": {
-        "Brown Rice": {"protein": 5, "carbs": 45, "fat": 1.8, "unit": "1 cup cooked"},
-        "Quinoa": {"protein": 8, "carbs": 39, "fat": 3.6, "unit": "1 cup cooked"},
-        "Oats": {"protein": 6, "carbs": 27, "fat": 3, "unit": "1/2 cup dry"},
-        "Whole Wheat Bread": {"protein": 5, "carbs": 20, "fat": 1.5, "unit": "1 slice"},
-        "White Rice": {"protein": 4, "carbs": 44, "fat": 0.4, "unit": "1 cup cooked"},
-        "Pasta": {"protein": 7, "carbs": 43, "fat": 1.3, "unit": "1 cup cooked"},
-        "Tortilla": {"protein": 4, "carbs": 20, "fat": 2, "unit": "1 medium"},
-        "Bagel": {"protein": 9, "carbs": 48, "fat": 1.5, "unit": "1 medium"},
-        "Cereal": {"protein": 2, "carbs": 22, "fat": 1, "unit": "1 cup"},
-        "Granola": {"protein": 4, "carbs": 37, "fat": 10, "unit": "1/2 cup"},
-    },
-    "Dairy": {
-        "Whole Milk": {"protein": 8, "carbs": 12, "fat": 8, "unit": "1 cup"},
-        "Low-fat Milk": {"protein": 8, "carbs": 13, "fat": 2.5, "unit": "1 cup"},
-        "Skim Milk": {"protein": 8, "carbs": 12, "fat": 0.2, "unit": "1 cup"},
-        "Greek Yogurt": {"protein": 10, "carbs": 6, "fat": 0.7, "unit": "100g"},
-        "Cheddar Cheese": {"protein": 7, "carbs": 0.4, "fat": 9, "unit": "1 oz"},
-        "Cottage Cheese": {"protein": 11, "carbs": 3, "fat": 4, "unit": "1/2 cup"},
-        "Cream Cheese": {"protein": 2, "carbs": 1, "fat": 10, "unit": "1 oz"},
-        "Butter": {"protein": 0.1, "carbs": 0, "fat": 11, "unit": "1 tbsp"},
-        "Yogurt (plain)": {"protein": 5, "carbs": 12, "fat": 3.5, "unit": "1 cup"},
-        "Parmesan": {"protein": 10, "carbs": 1, "fat": 7, "unit": "1 oz"},
-    },
-    "Meats": {
-        "Chicken Breast": {"protein": 31, "carbs": 0, "fat": 3.6, "unit": "100g"},
-        "Ground Beef (80%)": {"protein": 26, "carbs": 0, "fat": 20, "unit": "100g"},
-        "Pork Chop": {"protein": 22, "carbs": 0, "fat": 9, "unit": "100g"},
-        "Turkey Breast": {"protein": 29, "carbs": 0, "fat": 1, "unit": "100g"},
-        "Lamb Chop": {"protein": 25, "carbs": 0, "fat": 20, "unit": "100g"},
-        "Ham": {"protein": 18, "carbs": 1, "fat": 5, "unit": "100g"},
-        "Bacon": {"protein": 12, "carbs": 1, "fat": 42, "unit": "100g"},
-        "Sausage": {"protein": 18, "carbs": 2, "fat": 16, "unit": "100g"},
-        "Roast Beef": {"protein": 28, "carbs": 0, "fat": 8, "unit": "100g"},
-        "Beef Steak": {"protein": 27, "carbs": 0, "fat": 10, "unit": "100g"},
-    },
-    "Fish": {
-        "Salmon": {"protein": 25, "carbs": 0, "fat": 14, "unit": "100g"},
-        "Tuna": {"protein": 29, "carbs": 0, "fat": 1, "unit": "100g"},
-        "Tilapia": {"protein": 26, "carbs": 0, "fat": 2.3, "unit": "100g"},
-        "Cod": {"protein": 20, "carbs": 0, "fat": 1.5, "unit": "100g"},
-        "Sardines": {"protein": 25, "carbs": 0, "fat": 11, "unit": "100g"},
-    }
-}
-
-USER_PREFS_PATH = os.path.join("data", "user_preferences.json")
-MACRO_LOG_PATH = os.path.join("data", "macro_log.json")
+# ------------------------- File Paths --------------------------- #
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
+WORKOUT_LOG_PATH = os.path.join("data", "workout_log.json")
 
-# ... the rest of the app code remains unchanged
+# ------------------------- Macro Calculation Function --------------------------- #
+def calculate_macros(weight, height, age, gender, goal, unit):
+    if unit == "Imperial (lbs, inches)":
+        weight_kg = weight * 0.453592
+        height_cm = height * 2.54
+    else:
+        weight_kg = weight
+        height_cm = height
 
+    if gender == "Male":
+        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
+    else:
+        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
+
+    activity_factor = 1.55
+    tdee = bmr * activity_factor
+
+    if goal == "Fat Loss":
+        calories = tdee - 500
+    elif goal == "Muscle Gain":
+        calories = tdee + 300
+    else:
+        calories = tdee
+
+    protein = weight_kg * 2.2
+    fat = weight_kg * 1
+    carbs = (calories - (protein * 4 + fat * 9)) / 4
+
+    return round(protein), round(carbs), round(fat), round(calories)
+
+# ------------------------- User Intake Form --------------------------- #
+if page == "User Intake Form":
+    st.title("User Intake Form")
+
+    with st.form("intake_form"):
+        name = st.text_input("Full Name")
+        age = st.number_input("Age", min_value=10, max_value=100, value=30)
+        gender = st.selectbox("Gender", ["Male", "Female"])
+
+        unit_preference = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
+
+        if unit_preference == "Metric (kg, cm)":
+            weight = st.number_input("Weight (kg)", min_value=30.0, max_value=300.0, value=70.0)
+            height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=175.0)
+        else:
+            weight = st.number_input("Weight (lbs)", min_value=66.0, max_value=660.0, value=154.0)
+            height = st.number_input("Height (inches)", min_value=39.0, max_value=98.0, value=69.0)
+
+        goal = st.selectbox("What is your current fitness goal?", [
+            "Fat Loss",
+            "Muscle Gain",
+            "Maintenance"
+        ])
+
+        equipment = st.selectbox("Available Equipment", [
+            "None - Bodyweight Only",
+            "Home - Dumbbells and Bands",
+            "Home - Barbell, Bench, Squat Rack",
+            "Full Commercial Gym"
+        ])
+
+        submitted = st.form_submit_button("Save Profile")
+
+        if submitted:
+            user_profile = {
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "unit_preference": unit_preference,
+                "weight": weight,
+                "height": height,
+                "goal": goal,
+                "equipment": equipment,
+            }
+
+            with open(USER_PROFILE_PATH, "w") as f:
+                json.dump(user_profile, f)
+
+            st.success("Profile saved successfully!")
+
+# ------------------------- Workout Suggestions --------------------------- #
+if page == "Workout Suggestions":
+    st.title("Workout Suggestions")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH, "r") as f:
+            profile = json.load(f)
+
+        goal = profile.get("goal")
+        equipment = profile.get("equipment")
+
+        st.subheader(f"Workout Plan for Goal: {goal} with Equipment: {equipment}")
+
+        def get_workout(goal, equipment):
+            workouts = {
+                "Fat Loss": {
+                    "None - Bodyweight Only": [
+                        ("Full Body Circuit", ["Push-ups", "Bodyweight Squats", "Lunges", "Plank"]),
+                        ("Cardio", ["Jog in Place", "Jumping Jacks"])
+                    ],
+                    "Home - Dumbbells and Bands": [
+                        ("Upper Body", ["DB Shoulder Press", "DB Rows", "Band Pull-aparts"]),
+                        ("Lower Body + Cardio", ["DB Goblet Squats", "DB Deadlifts", "Jump Rope"])
+                    ],
+                    "Home - Barbell, Bench, Squat Rack": [
+                        ("Strength + Cardio", ["Barbell Squats", "Bench Press", "Barbell Rows", "Rowing Machine"])
+                    ],
+                    "Full Commercial Gym": [
+                        ("Full Split", ["Leg Press", "Lat Pulldown", "Incline Bench Press", "HIIT Treadmill"])
+                    ]
+                },
+                "Muscle Gain": {
+                    "None - Bodyweight Only": [
+                        ("Bodyweight Strength", ["Elevated Push-ups", "Wall Sits", "Single Leg Glute Bridges"]),
+                        ("Optional Cardio", ["Fast Walk"])
+                    ],
+                    "Home - Dumbbells and Bands": [
+                        ("Push Day", ["DB Bench Press", "Overhead Press", "Tricep Kickbacks"]),
+                        ("Pull Day", ["DB Rows", "Band Face Pulls", "Hammer Curls"])
+                    ],
+                    "Home - Barbell, Bench, Squat Rack": [
+                        ("Strength Split", ["Barbell Squat", "Barbell Bench Press", "Barbell Deadlift"])
+                    ],
+                    "Full Commercial Gym": [
+                        ("Push/Pull/Legs", ["Incline DB Press", "Cable Rows", "Leg Curl Machine"])
+                    ]
+                },
+                "Maintenance": {
+                    "None - Bodyweight Only": [
+                        ("Balanced Bodyweight", ["Push-ups", "Squats", "Plank"])
+                    ],
+                    "Home - Dumbbells and Bands": [
+                        ("Light Full Body", ["DB Curls", "DB Squats", "Band Pull-aparts"])
+                    ],
+                    "Home - Barbell, Bench, Squat Rack": [
+                        ("Strength Maintenance", ["Barbell Press", "Barbell Squat"])
+                    ],
+                    "Full Commercial Gym": [
+                        ("Circuit", ["Row", "Chest Press", "Lat Pulldown", "Leg Press"])
+                    ]
+                }
+            }
+            return workouts.get(goal, {}).get(equipment, [])
+
+        plan = get_workout(goal, equipment)
+
+        for day, routine in plan:
+            st.markdown(f"### {day}")
+            for move in routine:
+                st.write(f"- {move}")
+
+    else:
+        st.warning("Please fill out the intake form first.")
+
+# ------------------------- Log Workout --------------------------- #
+if page == "Log Workout":
+    st.title("Log Today's Workout")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        date = st.date_input("Workout Date", value=datetime.date.today())
+        workout_entries = []
+
+        with st.form("log_form"):
+            st.write("Enter each exercise performed:")
+            for i in range(5):
+                exercise = st.text_input(f"Exercise {i+1}")
+                sets = st.number_input(f"Sets for {exercise}", min_value=1, max_value=10, value=3, key=f"sets_{i}")
+                reps = st.text_input(f"Reps per set (e.g. 12,12,10)", key=f"reps_{i}")
+                weight = st.text_input(f"Weight used per set (e.g. 50,50,55)", key=f"weight_{i}")
+                if exercise:
+                    workout_entries.append({"exercise": exercise, "sets": sets, "reps": reps, "weight": weight})
+
+            submit_log = st.form_submit_button("Save Workout Log")
+
+        if submit_log:
+            log_data = {
+                "date": str(date),
+                "entries": workout_entries
+            }
+
+            if os.path.exists(WORKOUT_LOG_PATH):
+                with open(WORKOUT_LOG_PATH, "r") as f:
+                    logs = json.load(f)
+            else:
+                logs = []
+
+            logs.append(log_data)
+            with open(WORKOUT_LOG_PATH, "w") as f:
+                json.dump(logs, f)
+
+            st.success("Workout logged successfully!")
+
+    else:
+        st.warning("Please complete the intake form first.")
+
+# ------------------------- Macro Calculator --------------------------- #
+if page == "Macro Calculator":
+    st.title("Macro Calculator")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH, "r") as f:
+            profile = json.load(f)
+
+        protein, carbs, fat, calories = calculate_macros(
+            profile["weight"],
+            profile["height"],
+            profile["age"],
+            profile["gender"],
+            profile["goal"],
+            profile["unit_preference"]
+        )
+
+        st.subheader("Your Daily Macro Targets")
+        st.metric("Calories", f"{calories} kcal")
+        st.metric("Protein", f"{protein} g")
+        st.metric("Carbohydrates", f"{carbs} g")
+        st.metric("Fat", f"{fat} g")
+
+    else:
+        st.warning("Please complete the intake form first.")
