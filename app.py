@@ -254,3 +254,4 @@ if page == "Macro Calculator":
 
     else:
         st.warning("Please complete the intake form first.")
+
