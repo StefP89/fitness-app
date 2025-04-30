@@ -1,19 +1,20 @@
-# Streamlit Version of Personal Trainer & Nutrition Coach Program
+# Streamlit Version of Online Personal Trainer
 
 import streamlit as st
 import datetime
 import json
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# ------------------- Reset to Default Streamlit Theme ------------------- #
-st.set_page_config(page_title="Fitness Macro Tracker", layout="wide")
+# ------------------- Streamlit Setup ------------------- #
+st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 
 # Ensure the data directory exists
 if not os.path.exists("data"):
     os.makedirs("data")
 
-# ------------------------- Safe Session Reset --------------------------- #
+# ------------------- Safe Session Reset ------------------- #
 if st.sidebar.button("Reset App"):
     st.session_state.clear()
     st.session_state["reset_triggered"] = True
@@ -22,9 +23,10 @@ if st.session_state.get("reset_triggered"):
     st.session_state.pop("reset_triggered")
     st.rerun()
 
-# ------------------------- Sidebar Navigation --------------------------- #
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", [
+# ------------------- Sidebar Navigation ------------------- #
+st.sidebar.title("Online Personal Trainer")
+page = st.sidebar.radio("Navigation", [
+    "Main Page",
     "User Intake Form",
     "Workout Suggestions",
     "Log Workout",
@@ -32,12 +34,12 @@ page = st.sidebar.radio("Go to", [
     "Log Progress"
 ])
 
-# ------------------------- File Paths --------------------------- #
+# ------------------- File Paths ------------------- #
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
 WORKOUT_LOG_PATH = os.path.join("data", "workout_log.json")
 PROGRESS_LOG_PATH = os.path.join("data", "progress_log.json")
 
-# ------------------------- Macro Calculation Function --------------------------- #
+# ------------------- Macro Calculation Function ------------------- #
 def calculate_macros(weight, height, age, gender, goal, unit):
     if unit == "Imperial (lbs, inches)":
         weight_kg = weight * 0.453592
@@ -69,7 +71,13 @@ def calculate_macros(weight, height, age, gender, goal, unit):
 
     return round(protein), round(carbs), round(fat), round(calories)
 
-# ------------------------- User Intake Form --------------------------- #
+# ------------------- Main Page ------------------- #
+if page == "Main Page":
+    st.title("Welcome to Online Personal Trainer")
+    st.write("This is your centralized dashboard for tracking workouts, calculating macros, and monitoring progress.")
+    st.image("https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg", use_column_width=True)
+
+# ------------------- User Intake Form ------------------- #
 if page == "User Intake Form":
     st.title("User Intake Form")
 
@@ -119,88 +127,7 @@ if page == "User Intake Form":
 
             st.success("Profile saved successfully!")
 
-# ------------------------- Workout Suggestions --------------------------- #
-if page == "Workout Suggestions":
-    st.title("Workout Suggestions")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-
-        goal = profile.get("goal")
-        equipment = profile.get("equipment")
-
-        st.subheader(f"Workout Plan for Goal: {goal} with Equipment: {equipment}")
-
-        def get_workout(goal, equipment):
-            workouts = {
-                "Fat Loss": {
-                    "None - Bodyweight Only": [
-                        ("Full Body Circuit", ["Push-ups", "Bodyweight Squats", "Lunges", "Plank"]),
-                        ("Cardio", ["Jog in Place", "Jumping Jacks"])
-                    ],
-                    "Home - Dumbbells and Bands": [
-                        ("Upper Body", ["DB Shoulder Press", "DB Rows", "Band Pull-aparts"]),
-                        ("Lower Body + Cardio", ["DB Goblet Squats", "DB Deadlifts", "Jump Rope"])
-                    ],
-                    "Home - Barbell, Bench, Squat Rack": [
-                        ("Strength + Cardio", ["Barbell Squats", "Bench Press", "Barbell Rows", "Rowing Machine"])
-                    ],
-                    "Full Commercial Gym": [
-                        ("Full Split", ["Leg Press", "Lat Pulldown", "Incline Bench Press", "HIIT Treadmill"])
-                    ]
-                },
-                "Muscle Gain": {
-                    "None - Bodyweight Only": [
-                        ("Bodyweight Strength", ["Elevated Push-ups", "Wall Sits", "Single Leg Glute Bridges"]),
-                        ("Optional Cardio", ["Fast Walk"])
-                    ],
-                    "Home - Dumbbells and Bands": [
-                        ("Push Day", ["DB Bench Press", "Overhead Press", "Tricep Kickbacks"]),
-                        ("Pull Day", ["DB Rows", "Band Face Pulls", "Hammer Curls"])
-                    ],
-                    "Home - Barbell, Bench, Squat Rack": [
-                        ("Strength Split", ["Barbell Squat", "Barbell Bench Press", "Barbell Deadlift"])
-                    ],
-                    "Full Commercial Gym": [
-                        ("Push/Pull/Legs", ["Incline DB Press", "Cable Rows", "Leg Curl Machine"])
-                    ]
-                },
-                "Maintenance": {
-                    "None - Bodyweight Only": [
-                        ("Balanced Bodyweight", ["Push-ups", "Squats", "Plank"])
-                    ],
-                    "Home - Dumbbells and Bands": [
-                        ("Light Full Body", ["DB Curls", "DB Squats", "Band Pull-aparts"])
-                    ],
-                    "Home - Barbell, Bench, Squat Rack": [
-                        ("Strength Maintenance", ["Barbell Press", "Barbell Squat"])
-                    ],
-                    "Full Commercial Gym": [
-                        ("Circuit", ["Row", "Chest Press", "Lat Pulldown", "Leg Press"])
-                    ]
-                }
-            }
-            return workouts.get(goal, {}).get(equipment, [])
-
-        plan = get_workout(goal, equipment)
-
-        if plan:
-            for workout_day in plan:
-                if isinstance(workout_day, tuple) and len(workout_day) == 2:
-                    day, routine = workout_day
-                    st.markdown(f"### {day}")
-                    for move in routine:
-                        st.write(f"- {move}")
-                else:
-                    st.warning("Unexpected workout format.")
-        else:
-            st.warning("No workout plan found for your selected goal and equipment.")
-
-    else:
-        st.warning("Please fill out the intake form first.")
-
-# ------------------------- Log Progress --------------------------- #
+# ------------------- Log Progress ------------------- #
 if page == "Log Progress":
     st.title("Log Your Progress")
 
@@ -235,7 +162,7 @@ if page == "Log Progress":
 
             st.success("Progress saved successfully!")
 
-        # ---------------- Show Progress Table ---------------- #
+        # ---------------- Show Progress Table and Chart ---------------- #
         if os.path.exists(PROGRESS_LOG_PATH):
             with open(PROGRESS_LOG_PATH, "r") as f:
                 progress_log = json.load(f)
@@ -243,11 +170,18 @@ if page == "Log Progress":
             if progress_log:
                 df = pd.DataFrame(progress_log)
                 df['date'] = pd.to_datetime(df['date'])
-                df = df.sort_values(by='date', ascending=False)
+                df = df.sort_values(by='date')
                 st.subheader("Progress Log")
                 st.dataframe(df)
+
+                st.subheader("Weight Over Time")
+                fig, ax = plt.subplots()
+                ax.plot(df['date'], df['weight'], marker='o')
+                ax.set_xlabel("Date")
+                ax.set_ylabel("Weight")
+                ax.grid(True)
+                st.pyplot(fig)
             else:
                 st.info("No progress entries found yet.")
     else:
         st.warning("Please complete the intake form first.")
-
