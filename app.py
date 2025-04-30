@@ -27,12 +27,14 @@ page = st.sidebar.radio("Go to", [
     "User Intake Form",
     "Workout Suggestions",
     "Log Workout",
-    "Macro Calculator"
+    "Macro Calculator",
+    "Log Progress"
 ])
 
 # ------------------------- File Paths --------------------------- #
 USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
 WORKOUT_LOG_PATH = os.path.join("data", "workout_log.json")
+PROGRESS_LOG_PATH = os.path.join("data", "progress_log.json")
 
 # ------------------------- Macro Calculation Function --------------------------- #
 def calculate_macros(weight, height, age, gender, goal, unit):
@@ -45,8 +47,10 @@ def calculate_macros(weight, height, age, gender, goal, unit):
 
     if gender == "Male":
         bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-    else:
+    elif gender == "Female":
         bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
+    else:
+        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age
 
     activity_factor = 1.55
     tdee = bmr * activity_factor
@@ -71,7 +75,7 @@ if page == "User Intake Form":
     with st.form("intake_form"):
         name = st.text_input("Full Name")
         age = st.number_input("Age", min_value=10, max_value=100, value=30)
-        gender = st.selectbox("Gender", ["Male", "Female"])
+        gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"])
 
         unit_preference = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
 
@@ -255,3 +259,40 @@ if page == "Macro Calculator":
     else:
         st.warning("Please complete the intake form first.")
 
+# ------------------------- Log Progress --------------------------- #
+if page == "Log Progress":
+    st.title("Log Your Progress")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with st.form("progress_form"):
+            date = st.date_input("Date", value=datetime.date.today())
+            weight = st.number_input("Current Weight", min_value=20.0, max_value=300.0, step=0.1)
+            waist = st.number_input("Waist (optional, cm/in)", min_value=0.0, step=0.1)
+            hips = st.number_input("Hips (optional, cm/in)", min_value=0.0, step=0.1)
+            chest = st.number_input("Chest (optional, cm/in)", min_value=0.0, step=0.1)
+            submit_progress = st.form_submit_button("Save Progress")
+
+        if submit_progress:
+            progress_entry = {
+                "date": str(date),
+                "weight": weight,
+                "waist": waist,
+                "hips": hips,
+                "chest": chest
+            }
+
+            if os.path.exists(PROGRESS_LOG_PATH):
+                with open(PROGRESS_LOG_PATH, "r") as f:
+                    progress_log = json.load(f)
+            else:
+                progress_log = []
+
+            progress_log.append(progress_entry)
+
+            with open(PROGRESS_LOG_PATH, "w") as f:
+                json.dump(progress_log, f)
+
+            st.success("Progress saved successfully!")
+
+    else:
+        st.warning("Please complete the intake form first.")
