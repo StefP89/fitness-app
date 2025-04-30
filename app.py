@@ -126,3 +126,4 @@ if page == "Workout Suggestions":
             st.markdown(f"**{ex['exercise']}** - {ex['sets']} sets x {ex['reps']} reps | Rest: {ex['rest']}")
     else:
         st.warning("Please complete the intake form first.")
+
