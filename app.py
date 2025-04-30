@@ -89,7 +89,7 @@ def get_workout(goal, equipment):
 if page == "Main Page":
     st.title("Welcome to Online Personal Trainer")
     st.write("This is your centralized dashboard for tracking workouts, calculating macros, and monitoring progress.")
-    st.image("https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg", use_column_width=True)
+    st.image("https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg", use_container_width=True)
 
 # ------------------- User Intake Form ------------------- #
 if page == "User Intake Form":
@@ -103,11 +103,11 @@ if page == "User Intake Form":
         unit_preference = st.radio("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
 
         if unit_preference == "Metric (kg, cm)":
-            weight = st.number_input("Weight (kg)", min_value=30.0, max_value=300.0, value=70.0)
-            height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=175.0)
+            weight = st.number_input("Weight (kg)", min_value=30.0, max_value=300.0, value=70.0, key="weight")
+            height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=175.0, key="height")
         else:
-            weight = st.number_input("Weight (lbs)", min_value=66.0, max_value=660.0, value=154.0)
-            height = st.number_input("Height (inches)", min_value=39.0, max_value=98.0, value=69.0)
+            weight = st.number_input("Weight (lbs)", min_value=66.0, max_value=660.0, value=154.0, key="weight")
+            height = st.number_input("Height (inches)", min_value=39.0, max_value=98.0, value=69.0, key="height")
 
         goal = st.selectbox("What is your current fitness goal?", [
             "Fat Loss",
@@ -133,12 +133,12 @@ if page == "User Intake Form":
                 "weight": weight,
                 "height": height,
                 "goal": goal,
-                "equipment": equipment,
+                "equipment": equipment
             }
-
             with open(USER_PROFILE_PATH, "w") as f:
                 json.dump(user_profile, f)
-
+            for k, v in user_profile.items():
+                st.session_state[k] = v
             st.success("Profile saved successfully!")
 
 # ------------------- Workout Suggestions ------------------- #
@@ -201,5 +201,3 @@ if page == "Log Workout":
             st.success("Workout logged successfully!")
     else:
         st.warning("Please complete the intake form first.")
-
-
