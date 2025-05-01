@@ -143,8 +143,18 @@ if page == "Macro Calculator":
 # ------------------- Log Progress ------------------- #
 if page == "Log Progress":
     st.title("Log Progress")
+
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH) as f:
+            profile = json.load(f)
+        unit = profile.get("unit", "Metric (kg, cm)")
+        weight_label = "Current Weight (lbs)" if "Imperial" in unit else "Current Weight (kg)"
+    else:
+        unit = "Metric (kg, cm)"
+        weight_label = "Current Weight (kg)"
+
     date = st.date_input("Date", datetime.date.today())
-    weight = st.number_input("Current Weight")
+    weight = st.number_input(weight_label, min_value=20.0)
     notes = st.text_area("Notes (optional)")
 
     if st.button("Log Progress"):
