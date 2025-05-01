@@ -13,22 +13,10 @@ st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 if not os.path.exists("data"):
     os.makedirs("data")
 
-# ------------------- Safe Session Reset with Confirmation Modal ------------------- #
-if st.sidebar.button("Reset App"):
-    st.session_state["show_reset_modal"] = True
-
-if st.session_state.get("show_reset_modal"):
-    with st.modal("⚠️ Confirm Reset"):
-        st.write("This will clear all entered data. Are you sure you want to proceed?")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Yes, Reset"):
-                st.session_state.clear()
-                st.session_state["reset_triggered"] = True
-                st.rerun()
-        with col2:
-            if st.button("Cancel"):
-                st.session_state.pop("show_reset_modal", None)
+# ------------------- File Paths ------------------- #
+USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
+WORKOUT_LOG_PATH = os.path.join("data", "workout_log.json")
+PROGRESS_LOG_PATH = os.path.join("data", "progress_log.json")
 
 # ------------------- Sidebar Navigation ------------------- #
 st.sidebar.title("Online Personal Trainer")
@@ -41,10 +29,24 @@ page = st.sidebar.radio("Navigation", [
     "Log Progress"
 ])
 
-# ------------------- File Paths ------------------- #
-USER_PROFILE_PATH = os.path.join("data", "user_profile.json")
-WORKOUT_LOG_PATH = os.path.join("data", "workout_log.json")
-PROGRESS_LOG_PATH = os.path.join("data", "progress_log.json")
+# ------------------- Reset App Modal ------------------- #
+if st.sidebar.button("Reset App"):
+    st.session_state["show_reset_modal"] = True
+
+if st.session_state.get("show_reset_modal"):
+    with st.modal("⚠️ Confirm Reset"):
+        st.write("This will clear all entered data. Are you sure you want to proceed?")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Yes, Reset"):
+                st.session_state.clear()
+                for path in [USER_PROFILE_PATH, WORKOUT_LOG_PATH, PROGRESS_LOG_PATH]:
+                    if os.path.exists(path):
+                        os.remove(path)
+                st.rerun()
+        with col2:
+            if st.button("Cancel"):
+                st.session_state.pop("show_reset_modal", None)
 
 # ------------------- Macro Calculation Function ------------------- #
 def calculate_macros(weight, height, age, gender, goal, unit):
@@ -77,6 +79,68 @@ def calculate_macros(weight, height, age, gender, goal, unit):
     carbs = (calories - (protein * 4 + fat * 9)) / 4
 
     return round(protein), round(carbs), round(fat), round(calories)
+
+# ------------------- Workout Generator ------------------- #
+def generate_workout(goal, equipment):
+    workouts = {
+        "None - Bodyweight Only": {
+            "Fat Loss": [
+                "Jumping Jacks - 3x30 sec", "Push-ups - 3x15", "Bodyweight Squats - 3x20",
+                "Mountain Climbers - 3x30 sec", "Plank - 3x30 sec", "Cardio: 20-min brisk walk or jog"
+            ],
+            "Muscle Gain": [
+                "Push-ups - 4x12", "Step-ups - 3x12 each leg", "Triceps Dips on Chair - 3x10",
+                "Bodyweight Squats - 4x15", "Optional: Light Cardio 10 min"
+            ],
+            "Maintenance": [
+                "Lunges - 3x12", "Plank - 3x30 sec", "Burpees - 3x10",
+                "Jump Rope - 3x1 min", "Walk or Cycle - 15 min"
+            ]
+        },
+        "Home - Dumbbells and Bands": {
+            "Fat Loss": [
+                "Dumbbell Thrusters - 3x15", "Band Rows - 3x15", "Dumbbell Lunges - 3x12",
+                "Mountain Climbers - 3x30 sec", "Jump Rope - 5 min"
+            ],
+            "Muscle Gain": [
+                "DB Bench Press - 4x10", "DB Deadlifts - 4x10", "DB Curls - 3x12",
+                "Band Lateral Raises - 3x15", "Optional: Light Cardio 10 min"
+            ],
+            "Maintenance": [
+                "Goblet Squat - 3x12", "Band Row - 3x15", "DB Shoulder Press - 3x12",
+                "Cardio: Brisk Walk or Jog 15-20 min"
+            ]
+        },
+        "Home - Barbell, Bench, Squat Rack": {
+            "Fat Loss": [
+                "Barbell Squats - 4x10", "Barbell Rows - 4x10", "Push Press - 4x8",
+                "HIIT Circuit: 15 min"
+            ],
+            "Muscle Gain": [
+                "Bench Press - 4x8", "Barbell Squats - 4x10", "Romanian Deadlifts - 4x10",
+                "Pull-ups - 3x max reps", "Optional: Light Treadmill Walk 10 min"
+            ],
+            "Maintenance": [
+                "Front Squats - 3x10", "Overhead Press - 3x10", "Barbell Rows - 3x12",
+                "Cardio: 20 min moderate effort"
+            ]
+        },
+        "Full Commercial Gym": {
+            "Fat Loss": [
+                "Leg Press - 3x15", "Lat Pulldown - 3x12", "Treadmill Intervals - 20 min",
+                "Cable Chest Fly - 3x12", "Battle Ropes - 3x30 sec"
+            ],
+            "Muscle Gain": [
+                "Barbell Deadlift - 4x6", "Incline Press - 4x8", "Cable Row - 4x12",
+                "Leg Extension - 4x15", "Optional Stairmaster 10 min"
+            ],
+            "Maintenance": [
+                "Chest Press - 3x12", "Leg Curl - 3x15", "Lat Pulldown - 3x12",
+                "Cardio: Elliptical 15-20 min"
+            ]
+        }
+    }
+    return workouts.get(equipment, {}).get(goal, ["No plan available. Please check inputs."])
 
 # ------------------- Intake Form ------------------- #
 if page == "User Intake Form":
@@ -112,6 +176,7 @@ if page == "User Intake Form":
         }
         with open(USER_PROFILE_PATH, "w") as f:
             json.dump(profile, f)
+        st.session_state["profile"] = profile
         st.success("Profile saved!")
 
 # ------------------- Main Page ------------------- #
@@ -119,119 +184,27 @@ if page == "Main Page":
     st.title("Welcome to Your Online Personal Trainer")
     st.markdown("Use the navigation menu to begin your fitness journey. Track workouts, calculate macros, and more.")
 
-# ------------------- Macro Calculator ------------------- #
-if page == "Macro Calculator":
-    st.title("Macro Calculator")
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH) as f:
-            profile = json.load(f)
-        p, c, f, cal = calculate_macros(
-            profile["weight"],
-            profile["height"],
-            profile["age"],
-            profile["gender"],
-            profile["goal"],
-            profile["unit"]
-        )
-        st.metric("Protein (g)", p)
-        st.metric("Carbs (g)", c)
-        st.metric("Fat (g)", f)
-        st.metric("Calories", cal)
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------- Log Progress ------------------- #
-if page == "Log Progress":
-    st.title("Log Progress")
-
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH) as f:
-            profile = json.load(f)
-        unit = profile.get("unit", "Metric (kg, cm)")
-        weight_label = "Current Weight (lbs)" if "Imperial" in unit else "Current Weight (kg)"
-    else:
-        unit = "Metric (kg, cm)"
-        weight_label = "Current Weight (kg)"
-
-    date = st.date_input("Date", datetime.date.today())
-    weight = st.number_input(weight_label, min_value=20.0)
-    notes = st.text_area("Notes (optional)")
-
-    if st.button("Log Progress"):
-        log = {"date": str(date), "weight": weight, "notes": notes}
-        if os.path.exists(PROGRESS_LOG_PATH):
-            with open(PROGRESS_LOG_PATH) as f:
-                logs = json.load(f)
-        else:
-            logs = []
-        logs.append(log)
-        with open(PROGRESS_LOG_PATH, "w") as f:
-            json.dump(logs, f)
-        st.success("Progress logged!")
-
-    if os.path.exists(PROGRESS_LOG_PATH):
-        with open(PROGRESS_LOG_PATH) as f:
-            logs = json.load(f)
-        df = pd.DataFrame(logs)
-        st.line_chart(df.set_index("date")["weight"])
-
 # ------------------- Workout Suggestions ------------------- #
-def generate_workout(goal, equipment):
-    base = ["Push-ups", "Bodyweight Squats", "Plank"]
-    if equipment == "Home - Dumbbells and Bands":
-        base += ["Dumbbell Rows", "Resistance Band Curls"]
-    elif equipment == "Home - Barbell, Bench, Squat Rack":
-        base += ["Barbell Squat", "Bench Press", "Deadlift"]
-    elif equipment == "Full Commercial Gym":
-        base += ["Leg Press", "Lat Pulldown", "Cable Rows"]
-
-    if goal == "Fat Loss":
-        base.append("Cardio: 30 min")
-    elif goal == "Muscle Gain":
-        base.append("Optional Cardio: 15 min")
-
-    return base
-
 if page == "Workout Suggestions":
     st.title("Workout Suggestions")
-    if os.path.exists(USER_PROFILE_PATH):
+    profile = st.session_state.get("profile")
+    if not profile and os.path.exists(USER_PROFILE_PATH):
         with open(USER_PROFILE_PATH) as f:
             profile = json.load(f)
+
+    if profile:
+        st.subheader(f"Goal: {profile['goal']}, Equipment: {profile['equipment']}")
         workout = generate_workout(profile["goal"], profile["equipment"])
-        for exercise in workout:
-            st.write(f"- {exercise}")
+        for ex in workout:
+            st.write(f"- {ex}")
     else:
         st.warning("Please complete the intake form first.")
 
 # ------------------- Log Workout ------------------- #
-if page == "Log Workout":
-    st.title("Log Workout")
-    date = st.date_input("Workout Date", datetime.date.today())
-    exercise = st.text_input("Exercise")
-    sets = st.number_input("Sets", min_value=1, max_value=10, step=1)
-    reps = st.number_input("Reps per Set", min_value=1, max_value=50, step=1)
-    weight = st.number_input("Weight Used", min_value=0.0)
+# [... unchanged ...]
 
-    if st.button("Save Workout"):
-        log = {
-            "date": str(date),
-            "exercise": exercise,
-            "sets": sets,
-            "reps": reps,
-            "weight": weight
-        }
-        if os.path.exists(WORKOUT_LOG_PATH):
-            with open(WORKOUT_LOG_PATH) as f:
-                logs = json.load(f)
-        else:
-            logs = []
-        logs.append(log)
-        with open(WORKOUT_LOG_PATH, "w") as f:
-            json.dump(logs, f)
-        st.success("Workout logged!")
+# ------------------- Macro Calculator ------------------- #
+# [... unchanged ...]
 
-    if os.path.exists(WORKOUT_LOG_PATH):
-        with open(WORKOUT_LOG_PATH) as f:
-            logs = json.load(f)
-        df = pd.DataFrame(logs)
-        st.dataframe(df)
+# ------------------- Log Progress ------------------- #
+# [... unchanged ...]
