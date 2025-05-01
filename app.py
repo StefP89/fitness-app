@@ -114,4 +114,114 @@ if page == "User Intake Form":
             json.dump(profile, f)
         st.success("Profile saved!")
 
-# ------------------- (remaining code unchanged) ------------------- #
+# ------------------- Main Page ------------------- #
+if page == "Main Page":
+    st.title("Welcome to Your Online Personal Trainer")
+    st.markdown("Use the navigation menu to begin your fitness journey. Track workouts, calculate macros, and more.")
+
+# ------------------- Macro Calculator ------------------- #
+if page == "Macro Calculator":
+    st.title("Macro Calculator")
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH) as f:
+            profile = json.load(f)
+        p, c, f, cal = calculate_macros(
+            profile["weight"],
+            profile["height"],
+            profile["age"],
+            profile["gender"],
+            profile["goal"],
+            profile["unit"]
+        )
+        st.metric("Protein (g)", p)
+        st.metric("Carbs (g)", c)
+        st.metric("Fat (g)", f)
+        st.metric("Calories", cal)
+    else:
+        st.warning("Please complete the intake form first.")
+
+# ------------------- Log Progress ------------------- #
+if page == "Log Progress":
+    st.title("Log Progress")
+    date = st.date_input("Date", datetime.date.today())
+    weight = st.number_input("Current Weight")
+    notes = st.text_area("Notes (optional)")
+
+    if st.button("Log Progress"):
+        log = {"date": str(date), "weight": weight, "notes": notes}
+        if os.path.exists(PROGRESS_LOG_PATH):
+            with open(PROGRESS_LOG_PATH) as f:
+                logs = json.load(f)
+        else:
+            logs = []
+        logs.append(log)
+        with open(PROGRESS_LOG_PATH, "w") as f:
+            json.dump(logs, f)
+        st.success("Progress logged!")
+
+    if os.path.exists(PROGRESS_LOG_PATH):
+        with open(PROGRESS_LOG_PATH) as f:
+            logs = json.load(f)
+        df = pd.DataFrame(logs)
+        st.line_chart(df.set_index("date")["weight"])
+
+# ------------------- Workout Suggestions ------------------- #
+def generate_workout(goal, equipment):
+    base = ["Push-ups", "Bodyweight Squats", "Plank"]
+    if equipment == "Home - Dumbbells and Bands":
+        base += ["Dumbbell Rows", "Resistance Band Curls"]
+    elif equipment == "Home - Barbell, Bench, Squat Rack":
+        base += ["Barbell Squat", "Bench Press", "Deadlift"]
+    elif equipment == "Full Commercial Gym":
+        base += ["Leg Press", "Lat Pulldown", "Cable Rows"]
+
+    if goal == "Fat Loss":
+        base.append("Cardio: 30 min")
+    elif goal == "Muscle Gain":
+        base.append("Optional Cardio: 15 min")
+
+    return base
+
+if page == "Workout Suggestions":
+    st.title("Workout Suggestions")
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH) as f:
+            profile = json.load(f)
+        workout = generate_workout(profile["goal"], profile["equipment"])
+        for exercise in workout:
+            st.write(f"- {exercise}")
+    else:
+        st.warning("Please complete the intake form first.")
+
+# ------------------- Log Workout ------------------- #
+if page == "Log Workout":
+    st.title("Log Workout")
+    date = st.date_input("Workout Date", datetime.date.today())
+    exercise = st.text_input("Exercise")
+    sets = st.number_input("Sets", min_value=1, max_value=10, step=1)
+    reps = st.number_input("Reps per Set", min_value=1, max_value=50, step=1)
+    weight = st.number_input("Weight Used", min_value=0.0)
+
+    if st.button("Save Workout"):
+        log = {
+            "date": str(date),
+            "exercise": exercise,
+            "sets": sets,
+            "reps": reps,
+            "weight": weight
+        }
+        if os.path.exists(WORKOUT_LOG_PATH):
+            with open(WORKOUT_LOG_PATH) as f:
+                logs = json.load(f)
+        else:
+            logs = []
+        logs.append(log)
+        with open(WORKOUT_LOG_PATH, "w") as f:
+            json.dump(logs, f)
+        st.success("Workout logged!")
+
+    if os.path.exists(WORKOUT_LOG_PATH):
+        with open(WORKOUT_LOG_PATH) as f:
+            logs = json.load(f)
+        df = pd.DataFrame(logs)
+        st.dataframe(df)
