@@ -111,19 +111,60 @@ def get_workout(goal, equipment):
         workout += cardio_options
     return workout
 
-# ------------------- Workout Suggestions ------------------- #
-if page == "Workout Suggestions":
-    st.title("Today's Workout Plan")
+# ------------------- Workout Logger ------------------- #
+def log_workout(workout):
+    st.title("Log Your Workout")
+    today = str(datetime.date.today())
+    log_entries = []
 
+    for ex in workout:
+        st.subheader(ex["exercise"])
+        sets_data = []
+        for s in range(1, ex["sets"] + 1):
+            col1, col2 = st.columns(2)
+            with col1:
+                reps = st.number_input(f"Set {s} Reps - {ex['exercise']}", min_value=0, key=f"{ex['exercise']}_reps_{s}")
+            with col2:
+                weight = st.number_input(f"Set {s} Weight - {ex['exercise']}", min_value=0.0, key=f"{ex['exercise']}_wt_{s}")
+            sets_data.append({"set": s, "reps": reps, "weight": weight})
+        log_entries.append({"exercise": ex["exercise"], "sets": sets_data})
+
+    if st.button("Save Workout Log"):
+        if os.path.exists(WORKOUT_LOG_PATH):
+            with open(WORKOUT_LOG_PATH, "r") as f:
+                logs = json.load(f)
+        else:
+            logs = {}
+        logs[today] = log_entries
+        with open(WORKOUT_LOG_PATH, "w") as f:
+            json.dump(logs, f)
+        st.success("Workout logged!")
+
+# ------------------- Log Workout Page ------------------- #
+if page == "Log Workout":
     if os.path.exists(USER_PROFILE_PATH):
         with open(USER_PROFILE_PATH, "r") as f:
             profile = json.load(f)
-
         exercises = get_workout(profile["goal"], profile["equipment"])
-
-        st.subheader(f"Workout Plan for {profile['goal']} ({profile['equipment']})")
-        for ex in exercises:
-            st.markdown(f"**{ex['exercise']}** - {ex['sets']} sets x {ex['reps']} reps | Rest: {ex['rest']}")
+        log_workout(exercises)
     else:
         st.warning("Please complete the intake form first.")
+
+# ------------------- Macro Calculator ------------------- #
+if page == "Macro Calculator":
+    st.title("Macro Calculator")
+    if os.path.exists(USER_PROFILE_PATH):
+        with open(USER_PROFILE_PATH, "r") as f:
+            profile = json.load(f)
+        p, c, f, cal = calculate_macros(
+            profile["weight"], profile["height"], profile["age"],
+            profile["gender"], profile["goal"], profile["unit"])
+
+        st.metric("Calories", cal)
+        st.metric("Protein (g)", p)
+        st.metric("Carbs (g)", c)
+        st.metric("Fat (g)", f)
+    else:
+        st.warning("Please complete the intake form first.")
+
 
