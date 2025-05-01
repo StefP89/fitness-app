@@ -5,7 +5,6 @@ import datetime
 import json
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # ------------------- Streamlit Setup ------------------- #
 st.set_page_config(page_title="Online Personal Trainer", layout="wide")
@@ -71,6 +70,42 @@ def calculate_macros(weight, height, age, gender, goal, unit):
 
     return round(protein), round(carbs), round(fat), round(calories)
 
+# ------------------- Intake Form ------------------- #
+if page == "User Intake Form":
+    st.title("User Intake Form")
+    unit = st.selectbox("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
+    gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"])
+    age = st.number_input("Age", min_value=10, max_value=100, step=1)
+
+    if unit == "Imperial (lbs, inches)":
+        weight = st.number_input("Weight (lbs)", min_value=50.0, max_value=500.0)
+        height = st.number_input("Height (inches)", min_value=48.0, max_value=96.0)
+    else:
+        weight = st.number_input("Weight (kg)", min_value=20.0, max_value=250.0)
+        height = st.number_input("Height (cm)", min_value=120.0, max_value=240.0)
+
+    goal = st.selectbox("Goal", ["Fat Loss", "Muscle Gain", "Maintenance"])
+    equipment = st.selectbox("Available Equipment", [
+        "None - Bodyweight Only",
+        "Home - Dumbbells and Bands",
+        "Home - Barbell, Bench, Squat Rack",
+        "Full Commercial Gym"
+    ])
+
+    if st.button("Save Profile"):
+        profile = {
+            "unit": unit,
+            "gender": gender,
+            "age": age,
+            "weight": weight,
+            "height": height,
+            "goal": goal,
+            "equipment": equipment
+        }
+        with open(USER_PROFILE_PATH, "w") as f:
+            json.dump(profile, f)
+        st.success("Profile saved!")
+
 # ------------------- Workout Plan Generator ------------------- #
 def get_workout(goal, equipment):
     workouts = {
@@ -100,71 +135,25 @@ def get_workout(goal, equipment):
         ]
     }
 
-    cardio_options = [
+    cardio = [
         {"exercise": "Running", "sets": 1, "reps": "20 min", "rest": ""},
         {"exercise": "Cycling", "sets": 1, "reps": "30 min", "rest": ""},
         {"exercise": "Jump Rope", "sets": 1, "reps": "15 min", "rest": ""}
     ]
 
-    workout = workouts.get(equipment, [])
+    plan = workouts.get(equipment, [])
     if goal == "Fat Loss":
-        workout += cardio_options
-    return workout
+        plan += cardio
+    return plan
 
-# ------------------- Workout Logger ------------------- #
-def log_workout(workout):
-    st.title("Log Your Workout")
-    today = str(datetime.date.today())
-    log_entries = []
-
-    for ex in workout:
-        st.subheader(ex["exercise"])
-        sets_data = []
-        for s in range(1, ex["sets"] + 1):
-            col1, col2 = st.columns(2)
-            with col1:
-                reps = st.number_input(f"Set {s} Reps - {ex['exercise']}", min_value=0, key=f"{ex['exercise']}_reps_{s}")
-            with col2:
-                weight = st.number_input(f"Set {s} Weight - {ex['exercise']}", min_value=0.0, key=f"{ex['exercise']}_wt_{s}")
-            sets_data.append({"set": s, "reps": reps, "weight": weight})
-        log_entries.append({"exercise": ex["exercise"], "sets": sets_data})
-
-    if st.button("Save Workout Log"):
-        if os.path.exists(WORKOUT_LOG_PATH):
-            with open(WORKOUT_LOG_PATH, "r") as f:
-                logs = json.load(f)
-        else:
-            logs = {}
-        logs[today] = log_entries
-        with open(WORKOUT_LOG_PATH, "w") as f:
-            json.dump(logs, f)
-        st.success("Workout logged!")
-
-# ------------------- Log Workout Page ------------------- #
-if page == "Log Workout":
+# ------------------- Workout Suggestions ------------------- #
+if page == "Workout Suggestions":
     if os.path.exists(USER_PROFILE_PATH):
         with open(USER_PROFILE_PATH, "r") as f:
             profile = json.load(f)
-        exercises = get_workout(profile["goal"], profile["equipment"])
-        log_workout(exercises)
+        st.title("Today's Workout")
+        plan = get_workout(profile["goal"], profile["equipment"])
+        for item in plan:
+            st.markdown(f"**{item['exercise']}** - {item['sets']} sets of {item['reps']}, Rest: {item['rest']}")
     else:
         st.warning("Please complete the intake form first.")
-
-# ------------------- Macro Calculator ------------------- #
-if page == "Macro Calculator":
-    st.title("Macro Calculator")
-    if os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH, "r") as f:
-            profile = json.load(f)
-        p, c, f, cal = calculate_macros(
-            profile["weight"], profile["height"], profile["age"],
-            profile["gender"], profile["goal"], profile["unit"])
-
-        st.metric("Calories", cal)
-        st.metric("Protein (g)", p)
-        st.metric("Carbs (g)", c)
-        st.metric("Fat (g)", f)
-    else:
-        st.warning("Please complete the intake form first.")
-
-
