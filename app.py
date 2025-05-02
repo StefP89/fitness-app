@@ -29,24 +29,23 @@ page = st.sidebar.radio("Navigation", [
     "Log Progress"
 ])
 
-# ------------------- Reset App Modal ------------------- #
+# ------------------- Reset App Modal (Replaced with Warning Block) ------------------- #
 if st.sidebar.button("Reset App"):
     st.session_state["show_reset_modal"] = True
 
 if st.session_state.get("show_reset_modal"):
-    with st.modal("⚠️ Confirm Reset"):
-        st.write("This will clear all entered data. Are you sure you want to proceed?")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Yes, Reset"):
-                st.session_state.clear()
-                for path in [USER_PROFILE_PATH, WORKOUT_LOG_PATH, PROGRESS_LOG_PATH]:
-                    if os.path.exists(path):
-                        os.remove(path)
-                st.rerun()
-        with col2:
-            if st.button("Cancel"):
-                st.session_state.pop("show_reset_modal", None)
+    st.warning("\u26a0\ufe0f This will clear all entered data. Are you sure you want to proceed?")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Yes, Reset"):
+            st.session_state.clear()
+            for path in [USER_PROFILE_PATH, WORKOUT_LOG_PATH, PROGRESS_LOG_PATH]:
+                if os.path.exists(path):
+                    os.remove(path)
+            st.rerun()
+    with col2:
+        if st.button("Cancel"):
+            st.session_state.pop("show_reset_modal", None)
 
 # ------------------- Macro Calculation Function ------------------- #
 def calculate_macros(weight, height, age, gender, goal, unit):
@@ -168,9 +167,9 @@ if page == "User Intake Form":
         profile = {
             "unit": unit,
             "gender": gender,
-            "age": age,
-            "weight": weight,
-            "height": height,
+            "age": int(age),
+            "weight": float(weight),
+            "height": float(height),
             "goal": goal,
             "equipment": equipment
         }
@@ -199,12 +198,3 @@ if page == "Workout Suggestions":
             st.write(f"- {ex}")
     else:
         st.warning("Please complete the intake form first.")
-
-# ------------------- Log Workout ------------------- #
-# [... unchanged ...]
-
-# ------------------- Macro Calculator ------------------- #
-# [... unchanged ...]
-
-# ------------------- Log Progress ------------------- #
-# [... unchanged ...]
