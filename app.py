@@ -175,10 +175,10 @@ if page == "Workout Suggestions":
     if profile:
         weekly_plan = generate_weekly_workout(profile["goal"], profile["equipment"])
         for day, (exercises, rest) in weekly_plan.items():
-            st.subheader(day)
-            for name, sets, reps in exercises:
-                st.write(f"- {name}: {sets} sets x {reps} reps")
-            st.caption(f"Rest: {rest}")
+            with st.expander(day):
+                for name, sets, reps in exercises:
+                    st.write(f"- {name}: {sets} sets x {reps} reps")
+                st.caption(f"Rest: {rest}")
     else:
         st.warning("Please complete the intake form first.")
 
@@ -252,7 +252,15 @@ if page == "Log Progress":
             json.dump(logs, f)
         st.success("Progress saved!")
 
-    # Visualize progress
+    if os.path.exists(PROGRESS_LOG_PATH):
+        with open(PROGRESS_LOG_PATH) as f:
+            logs = json.load(f)
+        df = pd.DataFrame(logs)
+        df['date'] = pd.to_datetime(df['date'])
+        df = df.sort_values('date')
+        st.line_chart(df.set_index('date')[['weight', 'waist', 'hips']])
+
+    # Visualize weight lifted over time
     if os.path.exists(WORKOUT_LOG_PATH):
         with open(WORKOUT_LOG_PATH) as f:
             workout_data = json.load(f)
