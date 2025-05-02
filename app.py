@@ -33,8 +33,9 @@ page = st.sidebar.radio("Navigation", [
 # ------------------- Reset App Modal ------------------- #
 if st.sidebar.button("Reset App"):
     st.session_state["show_reset_modal"] = True
+    st.experimental_rerun()
 
-if st.session_state.get("show_reset_modal"):
+if st.session_state.get("show_reset_modal", False):
     st.warning("⚠️ This will clear all entered data. Are you sure you want to proceed?")
     col1, col2 = st.columns(2)
     with col1:
@@ -64,7 +65,7 @@ def calculate_macros(weight, height, age, gender, goal, unit):
     else:
         bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age
 
-    activity_factor = 1.55
+    activity_factor = 1.55  # Moderately active by default
     tdee = bmr * activity_factor
 
     if goal == "Fat Loss":
@@ -82,192 +83,92 @@ def calculate_macros(weight, height, age, gender, goal, unit):
 
 # ------------------- Weekly Workout Generator ------------------- #
 def generate_weekly_workout(goal, equipment):
-    split = ["Push Day", "Pull Day", "Leg Day", "Whole Body", "Upper Body"]
-    plans = {
-        "Push Day": [
-            ("Incline Bench Press", 4, 10),
-            ("Overhead DB Press", 3, 12),
-            ("Tricep Dips", 3, 10)
-        ],
-        "Pull Day": [
-            ("Pull-ups or Lat Pulldown", 4, 8),
-            ("Barbell or DB Row", 4, 10),
-            ("Face Pulls or Band Pull Aparts", 3, 15)
-        ],
-        "Leg Day": [
-            ("Squats (BB or Goblet)", 4, 10),
-            ("Lunges or Step-ups", 3, 12),
-            ("Hamstring Curls or RDL", 3, 10)
-        ],
-        "Whole Body": [
-            ("Clean & Press or Thrusters", 3, 10),
-            ("Burpees", 3, 15),
-            ("Kettlebell Swings or Jump Squats", 3, 15)
-        ],
-        "Upper Body": [
-            ("Bench Press or Push-ups", 4, 10),
-            ("Barbell Row or DB Row", 4, 10),
-            ("Overhead Press or Pike Push-ups", 3, 12)
-        ]
-    }
+    def include_ex(equip, opts):
+        if equip == "None - Bodyweight Only":
+            return opts.get("bodyweight", [])
+        elif equip == "Home - Dumbbells and Bands":
+            return opts.get("dumbbells", [])
+        elif equip == "Home - Barbell, Bench, Squat Rack":
+            return opts.get("barbell", [])
+        else:
+            return opts.get("gym", [])
+
     weekly = {}
-    for day in split:
-        exercises = plans[day]
+    workout_split = ["Push Day", "Pull Day", "Leg Day", "Whole Body", "Upper Body"]
+
+    exercises = {
+        "Push Day": {
+            "bodyweight": [("Push-ups", 4, 15), ("Dips on chair", 3, 12), ("Pike Push-ups", 3, 10)],
+            "dumbbells": [("DB Bench Press", 4, 10), ("DB Overhead Press", 3, 12), ("DB Tricep Kickbacks", 3, 12)],
+            "barbell": [("Barbell Bench Press", 4, 8), ("Overhead Press", 4, 10), ("Close Grip Press", 3, 10)],
+            "gym": [("Incline Bench Press", 4, 8), ("Seated Shoulder Press Machine", 3, 12), ("Tricep Pushdown", 3, 12)]
+        },
+        "Pull Day": {
+            "bodyweight": [("Inverted Rows", 4, 12), ("Superman Holds", 3, 30), ("Bodyweight Bicep Curls", 3, 15)],
+            "dumbbells": [("DB Rows", 4, 10), ("DB Bicep Curls", 3, 12), ("Band Face Pulls", 3, 15)],
+            "barbell": [("Barbell Row", 4, 10), ("EZ Bar Curl", 3, 12), ("Lat Pulldown (if available)", 3, 10)],
+            "gym": [("Lat Pulldown", 4, 10), ("Cable Row", 3, 12), ("Barbell Curl", 3, 12)]
+        },
+        "Leg Day": {
+            "bodyweight": [("Bodyweight Squats", 4, 20), ("Lunges", 3, 15), ("Wall Sit", 3, 30)],
+            "dumbbells": [("Goblet Squat", 4, 12), ("DB Lunges", 3, 10), ("Romanian Deadlift", 3, 12)],
+            "barbell": [("Back Squat", 4, 8), ("Barbell Lunge", 3, 10), ("Barbell RDL", 3, 10)],
+            "gym": [("Leg Press", 4, 10), ("Leg Curl Machine", 3, 12), ("Smith Squat", 3, 10)]
+        },
+        "Whole Body": {
+            "bodyweight": [("Burpees", 3, 15), ("Jump Squats", 3, 12), ("Mountain Climbers", 3, 30)],
+            "dumbbells": [("DB Snatch", 3, 10), ("Thrusters", 3, 12), ("KB Swing", 3, 15)],
+            "barbell": [("Clean & Press", 3, 8), ("Thrusters", 3, 10), ("Deadlifts", 3, 10)],
+            "gym": [("Battle Ropes", 3, 30), ("Clean & Press", 3, 8), ("Jump Rope", 3, 60)]
+        },
+        "Upper Body": {
+            "bodyweight": [("Push-ups", 4, 15), ("Inverted Rows", 4, 12), ("Pike Push-ups", 3, 10)],
+            "dumbbells": [("DB Bench Press", 4, 10), ("DB Row", 4, 10), ("DB Overhead Press", 3, 12)],
+            "barbell": [("Bench Press", 4, 8), ("Barbell Row", 4, 10), ("Overhead Press", 3, 10)],
+            "gym": [("Chest Press", 4, 10), ("Lat Pulldown", 4, 10), ("Shoulder Press", 3, 12)]
+        }
+    }
+
+    for day in workout_split:
+        workout = include_ex(equipment, exercises[day])
         if goal == "Fat Loss":
-            rest = "30-60 sec rest. Add 20 min cardio."
+            rest = "30-60 sec rest. Add 20-30 min cardio."
         elif goal == "Muscle Gain":
             rest = "60-90 sec rest. Cardio optional."
         else:
-            rest = "60 sec rest. Moderate effort cardio 2x/week."
-        weekly[day] = (exercises, rest)
+            rest = "60 sec rest. Moderate cardio 2x/week."
+        weekly[day] = (workout, rest)
     return weekly
 
-# ------------------- Intake Form ------------------- #
-if page == "User Intake Form":
-    st.title("User Intake Form")
-    unit = st.selectbox("Preferred Units", ["Metric (kg, cm)", "Imperial (lbs, inches)"])
-    gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"])
-    age = st.number_input("Age", min_value=10, max_value=100, step=1)
-
-    if unit == "Imperial (lbs, inches)":
-        weight = st.number_input("Weight (lbs)", min_value=50.0, max_value=500.0)
-        height = st.number_input("Height (inches)", min_value=48.0, max_value=96.0)
-    else:
-        weight = st.number_input("Weight (kg)", min_value=20.0, max_value=250.0)
-        height = st.number_input("Height (cm)", min_value=120.0, max_value=240.0)
-
-    goal = st.selectbox("Goal", ["Fat Loss", "Muscle Gain", "Maintenance"])
-    equipment = st.selectbox("Available Equipment", [
-        "None - Bodyweight Only",
-        "Home - Dumbbells and Bands",
-        "Home - Barbell, Bench, Squat Rack",
-        "Full Commercial Gym"
-    ])
-
-    if st.button("Save Profile"):
-        profile = {
-            "unit": unit,
-            "gender": gender,
-            "age": int(age),
-            "weight": float(weight),
-            "height": float(height),
-            "goal": goal,
-            "equipment": equipment
-        }
-        with open(USER_PROFILE_PATH, "w") as f:
-            json.dump(profile, f)
-        st.session_state["profile"] = profile
-        st.success("Profile saved!")
-
-# ------------------- Main Page ------------------- #
-if page == "Main Page":
-    st.title("Welcome to Your Online Personal Trainer")
-    st.markdown("Use the navigation menu to begin your fitness journey. Track workouts, calculate macros, and more.")
-
-# ------------------- Workout Suggestions ------------------- #
-if page == "Workout Suggestions":
-    st.title("Workout Suggestions")
-    profile = st.session_state.get("profile")
-    if not profile and os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH) as f:
-            profile = json.load(f)
-
-    if profile:
-        weekly_plan = generate_weekly_workout(profile["goal"], profile["equipment"])
-        for day, (exercises, rest) in weekly_plan.items():
-            with st.expander(day):
-                for name, sets, reps in exercises:
-                    st.write(f"- {name}: {sets} sets x {reps} reps")
-                st.caption(f"Rest: {rest}")
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------- Log Workout ------------------- #
-if page == "Log Workout":
-    st.title("Log Workout")
-    date = st.date_input("Workout Date", datetime.date.today())
-    exercise = st.text_input("Exercise Name")
-    sets = st.number_input("Number of Sets", min_value=1, max_value=10)
-
-    log = []
-    for i in range(int(sets)):
-        cols = st.columns(2)
-        with cols[0]:
-            reps = st.number_input(f"Reps for Set {i+1}", key=f"reps_{i}")
-        with cols[1]:
-            weight = st.number_input(f"Weight for Set {i+1} (lbs or kg)", key=f"weight_{i}")
-        log.append({"set": i+1, "reps": reps, "weight": weight})
-
-    if st.button("Save Workout Log"):
-        new_entry = {
-            "date": str(date),
-            "exercise": exercise,
-            "sets": log
-        }
-        if os.path.exists(WORKOUT_LOG_PATH):
-            with open(WORKOUT_LOG_PATH) as f:
-                existing = json.load(f)
-        else:
-            existing = []
-        existing.append(new_entry)
-        with open(WORKOUT_LOG_PATH, "w") as f:
-            json.dump(existing, f)
-        st.success("Workout logged!")
-
-# ------------------- Macro Calculator ------------------- #
-if page == "Macro Calculator":
-    st.title("Macro Calculator")
-    profile = st.session_state.get("profile")
-    if not profile and os.path.exists(USER_PROFILE_PATH):
-        with open(USER_PROFILE_PATH) as f:
-            profile = json.load(f)
-
-    if profile:
-        protein, carbs, fat, cal = calculate_macros(
-            profile["weight"], profile["height"], profile["age"], profile["gender"], profile["goal"], profile["unit"])
-        st.markdown(f"**Calories:** {cal} kcal")
-        st.markdown(f"**Protein:** {protein} g")
-        st.markdown(f"**Carbohydrates:** {carbs} g")
-        st.markdown(f"**Fats:** {fat} g")
-    else:
-        st.warning("Please complete the intake form first.")
-
-# ------------------- Log Progress ------------------- #
-if page == "Log Progress":
-    st.title("Progress Tracker")
-    date = st.date_input("Measurement Date", datetime.date.today())
-    weight = st.number_input("Current Weight")
-    waist = st.number_input("Waist Circumference")
-    hips = st.number_input("Hip Circumference")
-
-    if st.button("Save Progress"):
-        entry = {"date": str(date), "weight": weight, "waist": waist, "hips": hips}
-        if os.path.exists(PROGRESS_LOG_PATH):
-            with open(PROGRESS_LOG_PATH) as f:
-                logs = json.load(f)
-        else:
-            logs = []
-        logs.append(entry)
-        with open(PROGRESS_LOG_PATH, "w") as f:
-            json.dump(logs, f)
-        st.success("Progress saved!")
-
-    if os.path.exists(PROGRESS_LOG_PATH):
-        with open(PROGRESS_LOG_PATH) as f:
-            logs = json.load(f)
-        df = pd.DataFrame(logs)
-        df['date'] = pd.to_datetime(df['date'])
-        df = df.sort_values('date')
-        st.line_chart(df.set_index('date')[['weight', 'waist', 'hips']])
-
-    # Visualize weight lifted over time
+# ------------------- Workout Logging ------------------- #
+def log_workout(date, day, exercises):
+    entry = {
+        "date": str(date),
+        "day": day,
+        "exercises": exercises
+    }
     if os.path.exists(WORKOUT_LOG_PATH):
-        with open(WORKOUT_LOG_PATH) as f:
-            workout_data = json.load(f)
-        df = pd.json_normalize(workout_data, record_path=['sets'], meta=['date', 'exercise'])
-        if not df.empty:
-            selected_exercise = st.selectbox("View progress for exercise:", df['exercise'].unique())
-            filtered = df[df['exercise'] == selected_exercise]
-            filtered['date'] = pd.to_datetime(filtered['date'])
-            grouped = filtered.groupby('date')['weight'].max()
-            st.line_chart(grouped)
+        with open(WORKOUT_LOG_PATH, "r") as f:
+            logs = json.load(f)
+    else:
+        logs = []
+    logs.append(entry)
+    with open(WORKOUT_LOG_PATH, "w") as f:
+        json.dump(logs, f, indent=2)
+
+# ------------------- Progress Logging ------------------- #
+def log_progress(date, weight, waist, notes):
+    entry = {
+        "date": str(date),
+        "weight": weight,
+        "waist": waist,
+        "notes": notes
+    }
+    if os.path.exists(PROGRESS_LOG_PATH):
+        with open(PROGRESS_LOG_PATH, "r") as f:
+            logs = json.load(f)
+    else:
+        logs = []
+    logs.append(entry)
+    with open(PROGRESS_LOG_PATH, "w") as f:
+        json.dump(logs, f, indent=2)
