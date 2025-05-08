@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 
