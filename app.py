@@ -3,7 +3,7 @@ import datetime
 import json
 import os
 import pandas as pd
-import matplotlib.pyplot as plt  # <- This was missing
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 
@@ -27,31 +27,26 @@ def load_user_profile():
     return {}
 
 def log_workout(date, day, exercises):
-    logs = []
+    entry = {"date": str(date), "day": day, "exercises": exercises}
     if os.path.exists(WORKOUT_LOG_PATH):
         with open(WORKOUT_LOG_PATH, "r") as f:
-            logs = json.load(f)
-    logs.append({
-        "date": str(date),
-        "split": day,
-        "exercises": exercises
-    })
+            data = json.load(f)
+    else:
+        data = []
+    data.append(entry)
     with open(WORKOUT_LOG_PATH, "w") as f:
-        json.dump(logs, f, indent=2)
+        json.dump(data, f, indent=2)
 
 def log_progress(date, weight, waist, notes):
-    logs = []
+    entry = {"date": str(date), "weight": weight, "waist": waist, "notes": notes}
     if os.path.exists(PROGRESS_LOG_PATH):
         with open(PROGRESS_LOG_PATH, "r") as f:
-            logs = json.load(f)
-    logs.append({
-        "date": str(date),
-        "weight": weight,
-        "waist": waist,
-        "notes": notes
-    })
+            data = json.load(f)
+    else:
+        data = []
+    data.append(entry)
     with open(PROGRESS_LOG_PATH, "w") as f:
-        json.dump(logs, f, indent=2)
+        json.dump(data, f, indent=2)
 
 # ---------- Macro Calculator ----------
 def calculate_macros(weight, height, age, gender, goal, unit):
@@ -67,74 +62,7 @@ def calculate_macros(weight, height, age, gender, goal, unit):
     else:
         bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
 
-    tdee = bmr * 1.55  # Moderate activity
-
-    if goal == "Fat Loss":
-        calories = tdee - 500
-    elif goal == "Muscle Gain":
-        calories = tdee + 250
-    else:
-        calories = tdee
-
-    protein = weight_kg * 2.2
-    fat = calories * 0.25 / 9
-    carbs = (calories - (protein * 4 + fat * 9)) / 4
-    return round(protein), round(carbs), round(fat), round(calories)
-
-# ---------- Workout Generator ----------
-def generate_weekly_workout(goal, equipment):
-    # (Omitted for brevity - reuse your existing generate_weekly_workout code here)
-    # Copy-paste your full generate_weekly_workout() function here.
-    ...
-
-# ---------- Sidebar Navigation ----------
-st.sidebar.title("Online Personal Trainer")
-page = st.sidebar.radio("Navigation", [
-    "Main Page",
-    "User Intake Form",
-    "Workout Suggestions",
-    "Log Workout",
-    "Macro Calculator",
-    "Log Progress",
-    "Workout History"
-])
-
-# ---------- Main Page ----------
-if page == "Main Page":
-    st.title("Welcome to Your Personal Training App 💪")
-    st.write("Use the navigation menu on the left to get started.")
-    st.markdown("""
-    - **User Intake Form**: Fill out your profile and goals.
-    - **Workout Suggestions**: View a weekly training plan.
-    - **Macro Calculator**: Get daily calorie & macro targets.
-    - **Log Workout**: Keep track of your workouts.
-    - **Log Progress**: Record weight, waist size, and notes.
-    - **Workout History**: Review past workouts.
-    """)
-
-# (Continue with your existing blocks below: Intake Form, Macro Calculator, etc.)
-# Make sure you preserve all other logic as you had before.
-
-
-# ---------- Macro Calculator ----------
-
-def calculate_macros(weight, height, age, gender, goal, unit):
-    if unit == "Imperial (lbs, inches)":
-        weight_kg = weight * 0.453592
-        height_cm = height * 2.54
-    else:
-        weight_kg = weight
-        height_cm = height
-
-    if gender == "Male":
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-    elif gender == "Female":
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
-    else:
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age
-
-    tdee = bmr * 1.55  # moderate activity
-
+    tdee = bmr * 1.55
     if goal == "Fat Loss":
         tdee -= 500
     elif goal == "Muscle Gain":
@@ -145,6 +73,7 @@ def calculate_macros(weight, height, age, gender, goal, unit):
     carbs = (tdee - (protein * 4 + fat * 9)) / 4
 
     return round(protein), round(carbs), round(fat), round(tdee)
+
 # ---------- Workout Generator ----------
 
 def generate_weekly_workout(goal, equipment):
@@ -188,12 +117,12 @@ def generate_weekly_workout(goal, equipment):
         }
     }
 
+
     plan = {}
     splits = ["Push Day", "Pull Day", "Leg Day", "Whole Body", "Upper Body"]
     for split in splits:
         plan[split] = (options[equipment][split], "60–90 sec rest between sets")
 
-    # Cardio based on goal
     if goal == "Fat Loss":
         cardio_days = ["Cardio Day 1", "Cardio Day 2", "Cardio Day 3"]
     elif goal == "Muscle Gain":
@@ -206,8 +135,7 @@ def generate_weekly_workout(goal, equipment):
 
     return plan
 
-# ---------- Sidebar Navigation ----------
-
+# ---------- Sidebar ----------
 st.sidebar.title("Online Personal Trainer")
 page = st.sidebar.radio("Navigation", [
     "Main Page",
@@ -218,25 +146,40 @@ page = st.sidebar.radio("Navigation", [
     "Log Progress",
     "Workout History"
 ])
-# ------------------- Intake Form ------------------- #
+
+# ---------- Main Page ----------
+if page == "Main Page":
+    st.title("🏋️ Online Personal Trainer")
+    st.markdown("""
+        Welcome to your personal fitness dashboard!  
+        Use the sidebar to navigate between tools:
+        - Fill out your **User Intake Form**
+        - Generate a **Workout Plan**
+        - Use the **Macro Calculator**
+        - Log your **Workouts** and **Progress**
+        - Review your **Workout History**
+
+        👉 Start by completing the Intake Form so your plan and macros can be personalized!
+    """)
+
+# ---------- Intake Form ----------
 if page == "User Intake Form":
     st.header("User Intake Form")
     if "user_profile" not in st.session_state:
         st.session_state.user_profile = load_user_profile()
 
-    unit = st.radio("Preferred Units", ["Imperial (lbs, inches)", "Metric (kg, cm)"], index=0 if st.session_state.user_profile.get("unit") == "Imperial (lbs, inches)" else 1)
-    gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"], index=["Male", "Female", "Other", "Prefer not to disclose"].index(st.session_state.user_profile.get("gender", "Male")))
+    unit = st.radio("Preferred Units", ["Imperial (lbs, inches)", "Metric (kg, cm)"],
+                    index=0 if st.session_state.user_profile.get("unit") == "Imperial (lbs, inches)" else 1)
+    gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to disclose"],
+                          index=["Male", "Female", "Other", "Prefer not to disclose"].index(st.session_state.user_profile.get("gender", "Male")))
     age = st.number_input("Age", 10, 100, step=1, value=st.session_state.user_profile.get("age", 25))
     weight = st.number_input("Weight", 0.0, value=st.session_state.user_profile.get("weight", 150.0))
     height = st.number_input("Height", 0.0, value=st.session_state.user_profile.get("height", 170.0))
-    goal = st.selectbox("Primary Goal", ["Fat Loss", "Muscle Gain", "General Fitness"], index=["Fat Loss", "Muscle Gain", "General Fitness"].index(st.session_state.user_profile.get("goal", "Fat Loss")))
-    equipment = st.selectbox("Available Equipment", [
-        "None - Bodyweight Only",
-        "Home - Dumbbells and Bands",
-        "Home - Barbell, Bench, Squat Rack",
-        "Full Commercial Gym"
-    ], index=["None - Bodyweight Only", "Home - Dumbbells and Bands", "Home - Barbell, Bench, Squat Rack", "Full Commercial Gym"].index(st.session_state.user_profile.get("equipment", "None - Bodyweight Only")))
-    
+    goal = st.selectbox("Primary Goal", ["Fat Loss", "Muscle Gain", "General Fitness"],
+                        index=["Fat Loss", "Muscle Gain", "General Fitness"].index(st.session_state.user_profile.get("goal", "Fat Loss")))
+    equipment = st.selectbox("Available Equipment", list(options.keys()),
+                             index=list(options.keys()).index(st.session_state.user_profile.get("equipment", "None - Bodyweight Only")))
+
     if st.button("Save Profile"):
         profile = {
             "unit": unit,
@@ -251,34 +194,7 @@ if page == "User Intake Form":
         save_user_profile(profile)
         st.success("Profile saved!")
 
-# ------------------- Macro Calculator ------------------- #
-def calculate_macros(weight, height, age, gender, goal, unit):
-    if unit == "Imperial (lbs, inches)":
-        weight_kg = weight * 0.453592
-        height_cm = height * 2.54
-    else:
-        weight_kg = weight
-        height_cm = height
-
-    if gender == "Male":
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-    else:
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
-
-    tdee = bmr * 1.55  # Moderate activity
-
-    if goal == "Fat Loss":
-        calories = tdee - 500
-    elif goal == "Muscle Gain":
-        calories = tdee + 250
-    else:
-        calories = tdee
-
-    protein = weight_kg * 2.2
-    fat = calories * 0.25 / 9
-    carbs = (calories - (protein * 4 + fat * 9)) / 4
-    return round(protein), round(carbs), round(fat), round(calories)
-
+# ---------- Macro Calculator ----------
 if page == "Macro Calculator":
     st.header("Your Daily Macro Targets")
     profile = st.session_state.get("user_profile", load_user_profile())
@@ -294,7 +210,7 @@ if page == "Macro Calculator":
     else:
         st.warning("Please complete the intake form to calculate macros.")
 
-# ------------------- Workout Suggestions ------------------- #
+# ---------- Workout Suggestions ----------
 if page == "Workout Suggestions":
     st.header("Weekly Workout Plan")
     profile = st.session_state.get("user_profile", load_user_profile())
@@ -307,20 +223,8 @@ if page == "Workout Suggestions":
                 st.caption(f"_Rest: {rest}_")
     else:
         st.warning("Please fill out the intake form first.")
-# ------------------- Workout Logger ------------------- #
-def log_workout(date, day, exercises):
-    logs = []
-    if os.path.exists(WORKOUT_LOG_PATH):
-        with open(WORKOUT_LOG_PATH, "r") as f:
-            logs = json.load(f)
-    logs.append({
-        "date": str(date),
-        "split": day,
-        "exercises": exercises
-    })
-    with open(WORKOUT_LOG_PATH, "w") as f:
-        json.dump(logs, f, indent=2)
 
+# ---------- Log Workout ----------
 if page == "Log Workout":
     st.header("Log Today's Workout")
     date = st.date_input("Workout Date", value=datetime.date.today())
@@ -329,57 +233,25 @@ if page == "Log Workout":
     for i in range(1, 7):
         ex = st.text_input(f"Exercise {i} Name", key=f"ex{i}")
         sets = st.number_input(f"Sets for {ex or f'Exercise {i}'}", 1, 10, step=1, key=f"sets{i}")
-        reps = st.number_input(f"Reps per set for {ex or f'Exercise {i}'}", 1, 50, step=1, key=f"reps{i}")
-        weight = st.number_input(f"Weight used (if any) for {ex or f'Exercise {i}'}", 0.0, 1000.0, step=0.5, key=f"wt{i}")
+        reps = st.number_input(f"Reps for {ex or f'Exercise {i}'}", 1, 50, step=1, key=f"reps{i}")
+        weight = st.number_input(f"Weight used for {ex or f'Exercise {i}'}", 0.0, 1000.0, step=0.5, key=f"wt{i}")
         if ex:
             exercises.append({"name": ex, "sets": sets, "reps": reps, "weight": weight})
     if st.button("Log Workout"):
         log_workout(date, day, exercises)
         st.success("Workout logged successfully!")
 
-# ------------------- Progress Logger ------------------- #
-def log_progress(date, weight, waist, notes):
-    logs = []
-    if os.path.exists(PROGRESS_LOG_PATH):
-        with open(PROGRESS_LOG_PATH, "r") as f:
-            logs = json.load(f)
-    logs.append({
-        "date": str(date),
-        "weight": weight,
-        "waist": waist,
-        "notes": notes
-    })
-    with open(PROGRESS_LOG_PATH, "w") as f:
-        json.dump(logs, f, indent=2)
-
+# ---------- Log Progress ----------
 if page == "Log Progress":
     st.header("Log Body Progress")
     date = st.date_input("Date", value=datetime.date.today(), key="prog_date")
     weight = st.number_input("Weight", 0.0, 600.0, step=0.1, key="prog_weight")
-    waist = st.number_input("Waist Circumference (inches or cm)", 0.0, 100.0, step=0.1, key="prog_waist")
+    waist = st.number_input("Waist Circumference", 0.0, 100.0, step=0.1, key="prog_waist")
     notes = st.text_area("Notes")
     if st.button("Log Progress"):
         log_progress(date, weight, waist, notes)
         st.success("Progress logged!")
 
-# ------------------- Workout History ------------------- #
-if page == "Workout History":
-    st.header("Workout History")
-    if os.path.exists(WORKOUT_LOG_PATH):
-        with open(WORKOUT_LOG_PATH, "r") as f:
-            logs = json.load(f)
-        if logs:
-            for entry in logs[::-1]:
-                with st.expander(f"{entry['date']} - {entry['split']}"):
-                    for ex in entry["exercises"]:
-                        st.markdown(f"- **{ex['name']}**: {ex['sets']} sets x {ex['reps']} reps @ {ex['weight']} lbs/kg")
-        else:
-            st.info("No workouts logged yet.")
-    else:
-        st.info("Workout log not found.")
-
-# ------------------- Progress Visualization ------------------- #
-if page == "Log Progress":
     if os.path.exists(PROGRESS_LOG_PATH):
         with open(PROGRESS_LOG_PATH, "r") as f:
             logs = json.load(f)
@@ -395,3 +267,19 @@ if page == "Log Progress":
             ax.set_xlabel("Date")
             ax.legend()
             st.pyplot(fig)
+
+# ---------- Workout History ----------
+if page == "Workout History":
+    st.header("Workout History")
+    if os.path.exists(WORKOUT_LOG_PATH):
+        with open(WORKOUT_LOG_PATH, "r") as f:
+            logs = json.load(f)
+        if logs:
+            for entry in logs[::-1]:
+                with st.expander(f"{entry['date']} - {entry['day']}"):
+                    for ex in entry["exercises"]:
+                        st.markdown(f"- **{ex['name']}**: {ex['sets']} sets x {ex['reps']} reps @ {ex['weight']} lbs/kg")
+        else:
+            st.info("No workouts logged yet.")
+    else:
+        st.info("Workout log not found.")
