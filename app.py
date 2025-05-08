@@ -151,6 +151,21 @@ page = st.sidebar.radio("Navigation", [
     "Log Progress",
     "Workout History"
 ])
+
+if page == "Main Page":
+    st.title("🏋️ Online Personal Trainer")
+    st.markdown("""
+        Welcome to your personal fitness dashboard!  
+        Use the sidebar to navigate between tools:
+        - Fill out your **User Intake Form**
+        - Generate a **Workout Plan**
+        - Use the **Macro Calculator**
+        - Log your **Workouts** and **Progress**
+        - Review your **Workout History**
+
+        👉 Start by completing the Intake Form so your plan and macros can be personalized!
+    """)
+    
 # ------------------- Intake Form ------------------- #
 if page == "User Intake Form":
     st.header("User Intake Form")
