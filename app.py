@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import pandas as pd
+import matplotlib.pyplot as plt  # <- This was missing
 
 st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 
@@ -15,7 +16,6 @@ WORKOUT_LOG_PATH = "data/workout_log.json"
 PROGRESS_LOG_PATH = "data/progress_log.json"
 
 # ---------- Load & Save Helpers ----------
-
 def save_user_profile(profile):
     with open(USER_PROFILE_PATH, "w") as f:
         json.dump(profile, f, indent=2)
@@ -27,26 +27,94 @@ def load_user_profile():
     return {}
 
 def log_workout(date, day, exercises):
-    entry = {"date": str(date), "day": day, "exercises": exercises}
+    logs = []
     if os.path.exists(WORKOUT_LOG_PATH):
         with open(WORKOUT_LOG_PATH, "r") as f:
-            data = json.load(f)
-    else:
-        data = []
-    data.append(entry)
+            logs = json.load(f)
+    logs.append({
+        "date": str(date),
+        "split": day,
+        "exercises": exercises
+    })
     with open(WORKOUT_LOG_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(logs, f, indent=2)
 
 def log_progress(date, weight, waist, notes):
-    entry = {"date": str(date), "weight": weight, "waist": waist, "notes": notes}
+    logs = []
     if os.path.exists(PROGRESS_LOG_PATH):
         with open(PROGRESS_LOG_PATH, "r") as f:
-            data = json.load(f)
-    else:
-        data = []
-    data.append(entry)
+            logs = json.load(f)
+    logs.append({
+        "date": str(date),
+        "weight": weight,
+        "waist": waist,
+        "notes": notes
+    })
     with open(PROGRESS_LOG_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(logs, f, indent=2)
+
+# ---------- Macro Calculator ----------
+def calculate_macros(weight, height, age, gender, goal, unit):
+    if unit == "Imperial (lbs, inches)":
+        weight_kg = weight * 0.453592
+        height_cm = height * 2.54
+    else:
+        weight_kg = weight
+        height_cm = height
+
+    if gender == "Male":
+        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
+    else:
+        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
+
+    tdee = bmr * 1.55  # Moderate activity
+
+    if goal == "Fat Loss":
+        calories = tdee - 500
+    elif goal == "Muscle Gain":
+        calories = tdee + 250
+    else:
+        calories = tdee
+
+    protein = weight_kg * 2.2
+    fat = calories * 0.25 / 9
+    carbs = (calories - (protein * 4 + fat * 9)) / 4
+    return round(protein), round(carbs), round(fat), round(calories)
+
+# ---------- Workout Generator ----------
+def generate_weekly_workout(goal, equipment):
+    # (Omitted for brevity - reuse your existing generate_weekly_workout code here)
+    # Copy-paste your full generate_weekly_workout() function here.
+    ...
+
+# ---------- Sidebar Navigation ----------
+st.sidebar.title("Online Personal Trainer")
+page = st.sidebar.radio("Navigation", [
+    "Main Page",
+    "User Intake Form",
+    "Workout Suggestions",
+    "Log Workout",
+    "Macro Calculator",
+    "Log Progress",
+    "Workout History"
+])
+
+# ---------- Main Page ----------
+if page == "Main Page":
+    st.title("Welcome to Your Personal Training App 💪")
+    st.write("Use the navigation menu on the left to get started.")
+    st.markdown("""
+    - **User Intake Form**: Fill out your profile and goals.
+    - **Workout Suggestions**: View a weekly training plan.
+    - **Macro Calculator**: Get daily calorie & macro targets.
+    - **Log Workout**: Keep track of your workouts.
+    - **Log Progress**: Record weight, waist size, and notes.
+    - **Workout History**: Review past workouts.
+    """)
+
+# (Continue with your existing blocks below: Intake Form, Macro Calculator, etc.)
+# Make sure you preserve all other logic as you had before.
+
 
 # ---------- Macro Calculator ----------
 
