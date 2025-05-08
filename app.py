@@ -345,7 +345,7 @@ if page == "Log Progress":
             st.pyplot(fig)
 
 # ---------- Clear History Feature ----------
-with st.sidebar.expander("⚠️ Danger Zone"):
+with st.sidebar.expander("⚠️ Delete App History "):
     if st.button("Clear All Data"):
         if os.path.exists(USER_PROFILE_PATH):
             os.remove(USER_PROFILE_PATH)
