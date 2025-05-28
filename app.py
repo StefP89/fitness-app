@@ -168,7 +168,7 @@ if page == "Main Page":
 
     st.image(
     "https://raw.githubusercontent.com/StefP89/fitness-app/main/mascot.png",
-    caption="HYDRA FLEXCAVATOR",
+    caption="**HYDRA FLEXCAVATOR**",
     use_container_width=True
     )
 
