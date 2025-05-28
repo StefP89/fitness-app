@@ -168,8 +168,8 @@ if page == "Main Page":
 
     st.image(
     "https://raw.githubusercontent.com/StefP89/fitness-app/main/mascot.png",
-    caption="Your Fitness Mascot",
-    use_column_width=True
+    caption="HYDRA FLEXCAVATOR",
+    use_container_width=True
     )
 
 # ------------------- Intake Form ------------------- #
