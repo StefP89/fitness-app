@@ -150,7 +150,7 @@ with st.sidebar.expander("⚠️ Danger Zone"):
 if page == "Main Page":
     st.title("🏋️ Online Personal Trainer")
 
-    image_path = "data/ChatGPT Image May 21, 2025, 10_22_25 AM.png"
+    image_path = "ChatGPT Image May 21, 2025, 10_22_25 AM.png"
     if os.path.exists(image_path):
         st.image(image_path, use_column_width=True)
     else:
