@@ -163,7 +163,7 @@ if page == "Main Page":
         - Log your **Workouts** and **Progress**
         - Review your **Workout History**
 
-        st.image("https://github.com/StefP89/fitness-app/blob/main/ChatGPT%20Image%20May%2021%2C%202025%2C%2010_22_25%20AM.png")
+        st.image("ChatGPT Image May 21, 2025, 10_22_25 AM.png")
 
         👉 Start by completing the Intake Form so your plan and macros can be personalized!
     """)
