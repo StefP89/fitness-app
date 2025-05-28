@@ -163,14 +163,15 @@ if page == "Main Page":
         - Log your **Workouts** and **Progress**
         - Review your **Workout History**
 
-st.image(
+        👉 Start by completing the Intake Form so your plan and macros can be personalized!
+    """)
+
+    st.image(
     "https://raw.githubusercontent.com/StefP89/fitness-app/main/mascot.png",
     caption="Your Fitness Mascot",
     use_column_width=True
-)
-        👉 Start by completing the Intake Form so your plan and macros can be personalized!
-    """)
-    
+    )
+
 # ------------------- Intake Form ------------------- #
 if page == "User Intake Form":
     st.header("User Intake Form")
