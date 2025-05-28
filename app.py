@@ -164,7 +164,7 @@ if page == "Main Page":
         - Review your **Workout History**
 
 st.image(
-    "https://raw.githubusercontent.com/StefP89/fitness-app/blob/main/ChatGPT%20Image%20May%2021,%202025,%2010_22_25%20AM.png?raw=true",
+    "https://raw.githubusercontent.com/StefP89/fitness-app/raw/main/ChatGPT%20Image%20May%2021,%202025,%2010_22_25%20AM.png?raw=true",
     use_column_width=True
 )
 
