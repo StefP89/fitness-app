@@ -163,9 +163,6 @@ if page == "Main Page":
         - Log your **Workouts** and **Progress**
         - Review your **Workout History**
 
-st.image("https://raw.githubusercontent.com/StefP89/fitness-app/main/mascot.png")
-
-
         👉 Start by completing the Intake Form so your plan and macros can be personalized!
     """)
     
