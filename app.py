@@ -297,3 +297,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+elif menu == "Delete History":
+    st.header("⚠️ Delete All History")
+    if st.button("Delete All Logs"):
+        clear_data()
+        st.success("All logs deleted successfully!")
