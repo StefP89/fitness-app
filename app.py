@@ -298,8 +298,14 @@ def main():
 if __name__ == "__main__":
     main()
 
-elif menu == "Delete History":
-    st.header("⚠️ Delete All History")
-    if st.button("Delete All Logs"):
-        clear_data()
-        st.success("All logs deleted successfully!")
+# ---------- Clear History Feature ----------
+with st.sidebar.expander("⚠️ Delete App History "):
+    if st.button("Clear All Data"):
+        if os.path.exists(USER_PROFILE_PATH):
+            os.remove(USER_PROFILE_PATH)
+        if os.path.exists(WORKOUT_LOG_PATH):
+            os.remove(WORKOUT_LOG_PATH)
+        if os.path.exists(PROGRESS_LOG_PATH):
+            os.remove(PROGRESS_LOG_PATH)
+        st.session_state.clear()
+        st.success("All data cleared. Please refresh the app.")
