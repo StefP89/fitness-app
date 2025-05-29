@@ -5,6 +5,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+USER_PROFILE_PATH = "user_profile.json"
+WORKOUT_LOG_PATH = "workout_log.json"
+PROGRESS_LOG_PATH = "progress_log.json"
+
 st.set_page_config(page_title="Online Personal Trainer", layout="wide")
 
 # Ensure data directory exists
